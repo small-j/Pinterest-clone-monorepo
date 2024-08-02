@@ -1,0 +1,23 @@
+version: '3.9'
+
+services:
+  backend: 
+    build: ./backend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      - DB_URL=postgresql://user:password@db:5432/mydatabase
+
+  db:
+    image: postgres
+    restart: on-failure
+    shm_size: 128mb
+    volumes:
+      - /Users/smallj/postgresql_docker:/var/lib/postgresql/data \
+
+    environment:
+      # POSTGRES_INITDB_WALDIR: TODO: 추가 설정 필요.
+      POSTGRES_DB: pinterest
+      POSTGRES_PASSWORD: 

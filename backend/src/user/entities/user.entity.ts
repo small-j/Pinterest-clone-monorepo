@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { SaveImage } from './SaveImage'; // Make sure to create and import related entities
 import { Image } from 'src/image/entities/image.entity';
 import { UserImageHistory } from 'src/user-image-history/entities/user-image-history.entity';
+import { SaveImage } from 'src/save-image/entities/save-image.entity';
 
 @Entity({ name: 'users' })
 export class User {

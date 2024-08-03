@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { ImageReply } from './image-reply.entity';
-import { ImageCategory } from './image-category.entity';
 import { User } from 'src/user/entities/user.entity';
+import { ImageCategory } from 'src/image-category/entities/image-category.entity';
 
 @Entity('image_meta')
 export class Image {
@@ -27,7 +27,10 @@ export class Image {
   @OneToMany(() => ImageReply, (imageReply) => imageReply.image, { cascade: true, orphanedRowAction: 'delete' })
   imageReplies: ImageReply[];
 
-  @OneToMany(() => ImageCategory, (imageCategory) => imageCategory.image, { cascade: true, orphanedRowAction: 'delete' })
+  @OneToMany(() => ImageCategory, (imageCategory) => imageCategory.image, {
+    cascade: true,
+    orphanedRowAction: 'delete',
+  })
   imageCategories: ImageCategory[];
 
   constructor() {

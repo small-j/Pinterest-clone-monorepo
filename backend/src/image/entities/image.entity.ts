@@ -1,7 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
-import { ImageReply } from './image-reply.entity';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { ImageCategory } from 'src/image-category/entities/image-category.entity';
+import { ImageReply } from 'src/image-reply/entities/image-reply.entity';
 
 @Entity('image_meta')
 export class Image {
@@ -24,7 +31,10 @@ export class Image {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @OneToMany(() => ImageReply, (imageReply) => imageReply.image, { cascade: true, orphanedRowAction: 'delete' })
+  @OneToMany(() => ImageReply, (imageReply) => imageReply.image, {
+    cascade: true,
+    orphanedRowAction: 'delete',
+  })
   imageReplies: ImageReply[];
 
   @OneToMany(() => ImageCategory, (imageCategory) => imageCategory.image, {

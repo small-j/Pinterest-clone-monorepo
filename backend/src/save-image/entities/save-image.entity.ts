@@ -14,7 +14,7 @@ export class SaveImage {
   @PrimaryGeneratedColumn({ name: 'save_image_id' })
   id: number;
 
-  @ManyToOne(() => Image, (image) => image.saveImages, { lazy: true })
+  @ManyToOne(() => Image, { lazy: true })
   @JoinColumn({ name: 'image_meta_id' })
   image: Image;
 

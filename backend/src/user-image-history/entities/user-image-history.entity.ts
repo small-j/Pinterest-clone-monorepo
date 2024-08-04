@@ -7,7 +7,7 @@ export class UserImageHistory {
   @PrimaryGeneratedColumn({ name: 'user_image_history_id' })
   id: number;
 
-  @ManyToOne(() => Image, (image) => image.userImageHistories, { lazy: true })
+  @ManyToOne(() => Image, { lazy: true })
   @JoinColumn({ name: 'image_meta_id' })
   image: Image;
 

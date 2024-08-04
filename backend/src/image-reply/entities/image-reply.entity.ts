@@ -17,7 +17,7 @@ export class ImageReply {
   @JoinColumn({ name: 'image_meta_id' })
   image: Image;
 
-  @ManyToOne(() => User, (user) => user.imageReplies, { lazy: true })
+  @ManyToOne(() => User, { lazy: true })
   @JoinColumn({ name: 'user_id' })
   user: User;
 

@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Image } from 'src/image/entities/image.entity';
 import { UserImageHistory } from 'src/user-image-history/entities/user-image-history.entity';
 import { SaveImage } from 'src/save-image/entities/save-image.entity';
+import { BaseTime } from 'src/common/entities/base-time';
 
 @Entity({ name: 'users' })
 export class User {
@@ -18,6 +19,9 @@ export class User {
 
   @Column()
   roles: string;
+
+  @Column(() => BaseTime)
+  baseTime: BaseTime;
 
   @OneToMany(() => Image, (image) => image.user)
   images: Image[];

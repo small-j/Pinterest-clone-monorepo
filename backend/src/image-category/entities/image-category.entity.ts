@@ -1,3 +1,4 @@
+import { BaseTime } from 'src/common/entities/base-time';
 import { Image } from 'src/image/entities/image.entity';
 import {
   Entity,
@@ -18,6 +19,9 @@ export class ImageCategory {
 
   @Column()
   categoryId: number;
+
+  @Column(() => BaseTime)
+  baseTime: BaseTime;
 
   constructor(image?: Image, categoryId?: number) {
     if (image) {

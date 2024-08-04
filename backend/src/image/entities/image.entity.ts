@@ -9,6 +9,7 @@ import {
 import { User } from 'src/user/entities/user.entity';
 import { ImageCategory } from 'src/image-category/entities/image-category.entity';
 import { ImageReply } from 'src/image-reply/entities/image-reply.entity';
+import { BaseTime } from 'src/common/entities/base-time';
 
 @Entity('image_meta')
 export class Image {
@@ -27,6 +28,9 @@ export class Image {
   @Column({ name: 'image_content' })
   content: string;
 
+  @Column(() => BaseTime)
+  baseTime: BaseTime;
+
   @ManyToOne(() => User, (user) => user.images, { eager: false })
   @JoinColumn({ name: 'user_id' })
   user: User;
@@ -43,16 +47,22 @@ export class Image {
   })
   imageCategories: ImageCategory[];
 
-  constructor() {
-    this.imageReplies = [];
-    this.imageCategories = [];
-  }
+  // constructor() {
+  //   this.imageReplies = [];
+  //   this.imageCategories = [];
+  // }
 
   addCategory(imageCategory: ImageCategory) {
+    if (!this.imageCategories) {
+      this.imageCategories = [];
+    }
     this.imageCategories.push(imageCategory);
   }
 
   addReply(imageReply: ImageReply) {
+    if (!this.imageCategories) {
+      this.imageCategories = [];
+    }
     this.imageReplies.push(imageReply);
   }
 

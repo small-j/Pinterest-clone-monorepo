@@ -1,3 +1,4 @@
+import { BaseTime } from 'src/common/entities/base-time';
 import { Image } from 'src/image/entities/image.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
@@ -6,6 +7,7 @@ import {
   ManyToOne,
   Unique,
   JoinColumn,
+  Column,
 } from 'typeorm';
 
 @Entity()
@@ -13,6 +15,9 @@ import {
 export class SaveImage {
   @PrimaryGeneratedColumn({ name: 'save_image_id' })
   id: number;
+
+  @Column(() => BaseTime)
+  baseTime: BaseTime;
 
   @ManyToOne(() => Image, { lazy: true })
   @JoinColumn({ name: 'image_meta_id' })

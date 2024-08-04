@@ -1,3 +1,4 @@
+import { BaseTime } from 'src/common/entities/base-time';
 import { Image } from 'src/image/entities/image.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
@@ -23,6 +24,9 @@ export class ImageReply {
 
   @Column()
   content: string;
+
+  @Column(() => BaseTime)
+  baseTime: BaseTime;
 
   constructor(image?: Image, user?: User, content?: string) {
     if (image) this.image = image;

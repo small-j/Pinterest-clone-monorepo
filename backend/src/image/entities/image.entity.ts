@@ -47,11 +47,6 @@ export class Image {
   })
   imageCategories: ImageCategory[];
 
-  // constructor() {
-  //   this.imageReplies = [];
-  //   this.imageCategories = [];
-  // }
-
   addCategory(imageCategory: ImageCategory) {
     if (!this.imageCategories) {
       this.imageCategories = [];

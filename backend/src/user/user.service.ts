@@ -14,7 +14,6 @@ import { UserInfoeDto } from './dto/user-info.dto';
 import { JwtProvider } from './jwt/jwt-provider';
 import { JwtTokenHeaderFormDto } from './jwt/dto/jwt-token-header-form.dto';
 import { ErrorMessage } from './enums/error-message.enum';
-import { BcryptService } from './bcrypt/bcrypt.service';
 
 @Injectable()
 export class UserService {
@@ -23,16 +22,16 @@ export class UserService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(SaveImageRepository)
     private readonly saveImageRepository: SaveImageRepository,
-    private readonly bcryptService: BcryptService,
     private readonly jwtProvider: JwtProvider,
   ) {}
 
   async register(userRequest: CreateUserDto): Promise<number> {
-    const user = new User();
-    user.email = userRequest.email;
-    user.name = userRequest.name;
-    user.password = await this.bcryptService.hash(userRequest.password);
-    user.roles = 'USER'; // TODO: enum 타입으로 리팩토링
+    const user = new User(
+      userRequest.email,
+      userRequest.name,
+      userRequest.password,
+      'USER',
+    );
 
     try {
       await this.userRepository.save(user);
@@ -45,7 +44,7 @@ export class UserService {
   async login(loginInfoRequest: LoginInfoDto): Promise<JwtTokenHeaderFormDto> {
     const user = await this.findUserByEmail(loginInfoRequest.email);
     this.validateUser(user);
-    await this.isEqualPassword(loginInfoRequest.password, user.password);
+    await this.isEqualPassword(user, loginInfoRequest.password);
 
     const jwtToken = this.jwtProvider.createJwtToken(user);
     return this.jwtProvider.getJwtTokenHeaderForm(jwtToken);
@@ -65,11 +64,8 @@ export class UserService {
     if (!user) throw new NotFoundException(ErrorMessage.NOT_EXIST_USER);
   }
 
-  private async isEqualPassword(requestPassword: string, dbPassword: string) {
-    const isMatch = await this.bcryptService.compare(
-      requestPassword,
-      dbPassword,
-    );
+  private async isEqualPassword(user: User, requestPassword: string) {
+    const isMatch = await user.checkPassword(requestPassword);
     if (!isMatch)
       throw new UnauthorizedException(ErrorMessage.MISMATCHED_PASSWORD);
   }

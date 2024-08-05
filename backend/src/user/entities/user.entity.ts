@@ -4,6 +4,8 @@ import { UserImageHistory } from 'src/user-image-history/entities/user-image-his
 import { SaveImage } from 'src/save-image/entities/save-image.entity';
 import { BaseTime } from 'src/common/entities/base-time';
 
+import bcrypt from 'bcrypt';
+
 @Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn()
@@ -35,6 +37,15 @@ export class User {
   )
   userImageHistories: UserImageHistory[];
 
+  constructor(email, name, password, roles) {
+    this.email = email;
+    this.name = name;
+    this.password = password;
+    this.roles = roles; // TODO: enum 타입으로 리팩토링
+
+    this.hashPassword();
+  }
+
   getRoleList(): string[] {
     return this.roles.length > 0 ? this.roles.split(',') : [];
   }
@@ -58,5 +69,15 @@ export class User {
       this.userImageHistories = [];
     }
     this.userImageHistories.push(userImageHistory);
+  }
+
+  async hashPassword(): Promise<void> {
+    const salt = await bcrypt.genSalt();
+    // TODO: password 검사 조건 추가.
+    this.password = await bcrypt.hash(this.password, salt);
+  }
+
+  async checkPassword(plainPassword: string): Promise<boolean> {
+    return await bcrypt.compare(plainPassword, this.password);
   }
 }

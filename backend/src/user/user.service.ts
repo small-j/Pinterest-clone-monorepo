@@ -11,18 +11,14 @@ import { SaveImageRepository } from 'src/save-image/save-image.repository';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginInfoDto } from './dto/login-info.dto';
 import { UserInfoeDto } from './dto/user-info.dto';
-import { JwtProvider } from './jwt/jwt-provider';
-import { JwtTokenHeaderFormDto } from './jwt/dto/jwt-token-header-form.dto';
-import { ErrorMessage } from './enums/error-message.enum';
+import { ErrorMessage } from 'src/common/enum/error-message';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    @InjectRepository(SaveImageRepository)
     private readonly saveImageRepository: SaveImageRepository,
-    private readonly jwtProvider: JwtProvider,
   ) {}
 
   async register(userRequest: CreateUserDto): Promise<number> {
@@ -32,6 +28,7 @@ export class UserService {
       userRequest.password,
       'USER',
     );
+    await user.hashPassword();
 
     try {
       await this.userRepository.save(user);
@@ -41,21 +38,25 @@ export class UserService {
     }
   }
 
-  async login(loginInfoRequest: LoginInfoDto): Promise<JwtTokenHeaderFormDto> {
+  async login(loginInfoRequest: LoginInfoDto): Promise<User> {
     const user = await this.findUserByEmail(loginInfoRequest.email);
     this.validateUser(user);
     await this.isEqualPassword(user, loginInfoRequest.password);
 
-    const jwtToken = this.jwtProvider.createJwtToken(user);
-    return this.jwtProvider.getJwtTokenHeaderForm(jwtToken);
+    return user;
   }
 
   async getUserInfo(id: number): Promise<UserInfoeDto> {
     const user = await this.userRepository.findOneBy({ id: id });
     this.validateUser(user);
 
-    const saveImages = await this.saveImageRepository.findByUser(user);
-    const images = saveImages.map((saveImage) => saveImage.image);
+    // const saveImages = await this.saveImageRepository.findByUser(user.id); // TODO: 삭제.
+    const saveImages = await user.saveImages;
+    console.log(saveImages);
+    const images =
+      typeof saveImages === 'undefined'
+        ? []
+        : saveImages.map((saveImage) => saveImage.image); // TODO: n + 1 문제 개선.
 
     return UserInfoeDto.of(user, images);
   }

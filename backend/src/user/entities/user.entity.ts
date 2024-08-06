@@ -4,7 +4,7 @@ import { UserImageHistory } from 'src/user-image-history/entities/user-image-his
 import { SaveImage } from 'src/save-image/entities/save-image.entity';
 import { BaseTime } from 'src/common/entities/base-time';
 
-import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt';
 
 @Entity({ name: 'users' })
 export class User {
@@ -37,13 +37,11 @@ export class User {
   )
   userImageHistories: UserImageHistory[];
 
-  constructor(email, name, password, roles) {
+  constructor(email: string, name: string, password: string, roles: string) {
     this.email = email;
     this.name = name;
     this.password = password;
     this.roles = roles; // TODO: enum 타입으로 리팩토링
-
-    this.hashPassword();
   }
 
   getRoleList(): string[] {

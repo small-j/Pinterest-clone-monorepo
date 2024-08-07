@@ -1,43 +1,39 @@
 import { Injectable } from '@nestjs/common';
-import { EntityManager, Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { Image } from './entities/image.entity';
 import { User } from 'src/user/entities/user.entity';
 import { UserImageHistory } from 'src/user-image-history/entities/user-image-history.entity';
 import { ImageCategory } from 'src/image-category/entities/image-category.entity';
 
 @Injectable()
-export class ImageRepository {
+export class ImageRepository extends Repository<Image> {
   em: EntityManager;
 
-  constructor(
-    @InjectRepository(Image)
-    private readonly imageRepository: Repository<Image>,
-  ) {
-    this.em = imageRepository.manager;
+  constructor(private dataSource: DataSource) {
+    super(Image, dataSource.createEntityManager());
   }
 
   async addImage(image: Image): Promise<void> {
-    await this.imageRepository.save(image);
+    await this.save(image);
   }
 
   async addUserImageHistory(userImageHistory: UserImageHistory): Promise<void> {
-    await this.imageRepository.save(userImageHistory);
+    await this.save(userImageHistory);
   }
 
   async findById(id: number): Promise<Image> {
-    return this.imageRepository.findOneBy({ id: id });
+    return this.findOneBy({ id: id });
   }
 
   async deleteImage(image: Image): Promise<void> {
-    await this.imageRepository.remove(image);
+    await this.remove(image);
   }
 
   async findImagesWithSimilarCategories(
     categoryIds: number[],
     imageId: number,
   ): Promise<Image[]> {
-    const query = this.em
+    const query = this.manager
       .createQueryBuilder(Image, 'a')
       .innerJoinAndSelect('a.imageCategories', 'b')
       .where('b.categoryId IN (:...categoryIds)', { categoryIds })
@@ -50,7 +46,7 @@ export class ImageRepository {
   }
 
   async getImageFromImageHistory(user: User): Promise<Image[]> {
-    return this.em
+    return this.manager
       .createQueryBuilder(Image, 'i')
       .innerJoin('i.userImageHistories', 'ui')
       .where('ui.user = :user', { user })
@@ -60,7 +56,7 @@ export class ImageRepository {
   }
 
   async getImageCategoryIdFromImages(images: Image[]): Promise<number[]> {
-    const query = this.em
+    const query = this.manager
       .createQueryBuilder()
       .select('DISTINCT ic.categoryId', 'categoryId')
       .from(ImageCategory, 'ic')
@@ -71,7 +67,7 @@ export class ImageRepository {
   }
 
   async getRecommendRandomImages(categoryIds: number[]): Promise<Image[]> {
-    const query = this.em
+    const query = this.manager
       .createQueryBuilder(Image, 'a')
       .innerJoin('a.imageCategories', 'b')
       .where('b.categoryId IN (:...categoryIds)', { categoryIds })
@@ -85,7 +81,7 @@ export class ImageRepository {
   async getImageTitleOrContentRelationalImages(
     searchStr: string,
   ): Promise<Image[]> {
-    return this.em
+    return this.manager
       .createQueryBuilder(Image, 'i')
       .where('i.title LIKE :searchStr', { searchStr: `%${searchStr}%` })
       .orWhere('i.content LIKE :searchStr', { searchStr: `%${searchStr}%` })
@@ -97,7 +93,7 @@ export class ImageRepository {
     imageCategories: ImageCategory[],
   ): Promise<Image[]> {
     const categoryIds = imageCategories.map((ic) => ic.categoryId);
-    return this.em
+    return this.manager
       .createQueryBuilder(Image, 'i')
       .innerJoin('i.imageCategories', 'ic')
       .where('ic.categoryId IN (:...categoryIds)', { categoryIds })

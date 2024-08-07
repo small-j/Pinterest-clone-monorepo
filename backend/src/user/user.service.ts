@@ -5,20 +5,18 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { SaveImageRepository } from 'src/save-image/save-image.repository';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginInfoDto } from './dto/login-info.dto';
 import { UserInfoeDto } from './dto/user-info.dto';
 import { ErrorMessage } from 'src/common/enum/error-message';
+import { UserRepository } from './user.repository';
 
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
-    private readonly saveImageRepository: SaveImageRepository,
+    @InjectRepository(UserRepository)
+    private readonly userRepository: UserRepository,
   ) {}
 
   async register(userRequest: CreateUserDto): Promise<number> {
@@ -50,7 +48,6 @@ export class UserService {
     const user = await this.userRepository.findOneBy({ id: id });
     this.validateUser(user);
 
-    // const saveImages = await this.saveImageRepository.findByUser(user.id); // TODO: 삭제.
     const saveImages = await user.saveImages;
     console.log(saveImages);
     const images =

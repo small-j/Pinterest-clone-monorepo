@@ -1,1 +1,5 @@
-export class CreateImageDto {}
+export class CreateImageDto {
+  inputStream: NodeJS.ReadableStream;
+  contentType: string;
+  contentLength: number;
+}

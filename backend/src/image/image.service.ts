@@ -97,7 +97,9 @@ export class ImageService {
     await this.deleteSaveImageToImageHelperRepository.deleteSaveImageToImage(
       image,
     );
-    // TODO: userImageHistory 지워주기.
+    await this.userImageHistoryRepository.removeUserImageHistoryFromImage(
+      image,
+    );
     await this.imageRepository.remove(image);
 
     return imageId;

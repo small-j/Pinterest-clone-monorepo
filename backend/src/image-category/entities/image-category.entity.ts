@@ -14,11 +14,14 @@ export class ImageCategory {
   @PrimaryGeneratedColumn({ name: 'image_category_id' })
   id: number;
 
-  @ManyToOne(() => Image, (image) => image.imageCategories, { lazy: true })
+  @ManyToOne(() => Image, (image) => image.imageCategories, {
+    lazy: true,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'image_meta_id' })
   image: Image;
 
-  @ManyToOne(() => Category, { lazy: true })
+  @ManyToOne(() => Category, { lazy: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'category_id' })
   category: Category;
 

@@ -14,11 +14,14 @@ export class ImageReply {
   @PrimaryGeneratedColumn({ name: 'image_reply_id' })
   id: number;
 
-  @ManyToOne(() => Image, (image) => image.imageReplies, { lazy: true })
+  @ManyToOne(() => Image, (image) => image.imageReplies, {
+    lazy: true,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'image_meta_id' })
   image: Image;
 
-  @ManyToOne(() => User, { lazy: true })
+  @ManyToOne(() => User, { lazy: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
 

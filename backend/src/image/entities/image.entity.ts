@@ -37,13 +37,11 @@ export class Image {
 
   @OneToMany(() => ImageReply, (imageReply) => imageReply.image, {
     cascade: true,
-    orphanedRowAction: 'delete',
   })
   imageReplies: ImageReply[];
 
   @OneToMany(() => ImageCategory, (imageCategory) => imageCategory.image, {
     cascade: true,
-    orphanedRowAction: 'delete',
   })
   imageCategories: ImageCategory[];
 

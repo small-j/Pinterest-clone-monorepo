@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { UserImageHistory } from './entities/user-image-history.entity';
+import { Image } from 'src/image/entities/image.entity';
 
 @Injectable()
 export class UserImageHistoryRepository extends Repository<UserImageHistory> {
@@ -23,5 +24,13 @@ export class UserImageHistoryRepository extends Repository<UserImageHistory> {
       });
 
     return query.getMany();
+  }
+
+  async removeUserImageHistoryFromImage(image: Image): Promise<void> {
+    await this.createQueryBuilder()
+      .delete()
+      .from(Image)
+      .where('id = :id', { id: image.id })
+      .execute();
   }
 }

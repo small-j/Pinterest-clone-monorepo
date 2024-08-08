@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { JwtService, TokenExpiredError } from '@nestjs/jwt';
 import { User } from 'src/user/entities/user.entity';
 import { JwtTokenHeaderFormDto } from './dto/jwt-token-header-form.dto';
 import { ConfigService } from '@nestjs/config';
@@ -48,7 +48,13 @@ export class JwtProviderService {
   }
 
   validateToken(token: string): Payload {
-    return this.jwtService.verify<Payload>(token);
+    try {
+      return this.jwtService.verify<Payload>(token);
+      // } catch (err: TokenExpiredError) {
+      // TODO: 특정 에러 잡는걸로 바꾸기.
+    } catch (err: any) {
+      throw new UnauthorizedException();
+    }
   }
 
   getEmailFromJwtToken(token: string): string {

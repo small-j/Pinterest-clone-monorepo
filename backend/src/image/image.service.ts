@@ -10,18 +10,18 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ImageRepository } from './image.repository';
 import { CategoryRepository } from 'src/category/category.repository';
 import { ImageCategoryRepository } from 'src/image-category/image-category.repository';
-import { SaveImageRepository } from 'src/save-image/save-image.repository';
 import { UserRepository } from 'src/user/user.repository';
 // import { StorageManager } from './storage/storage.manager';
 import { ErrorMessage } from 'src/common/enum/error-message';
-import { GetUploadImageDataDto } from './dto/get-upload-image-data.dto';
-import { CreateImageDto } from './dto/create-image.dto';
+// import { GetUploadImageDataDto } from './dto/get-upload-image-data.dto';
+// import { CreateImageDto } from './dto/create-image.dto';
 import { CreateMetaImageDto } from './dto/create-meta-image.dto';
 import { GetImageDetailDto } from './dto/get-image-detail.dto';
 import { GetImageReplyDto } from './dto/get-image-reply.dto';
 import { GetImageDto } from './dto/get-image.dto';
 import { UserImageHistoryRepository } from 'src/user-image-history/user-image-history.repository';
 import { UserImageHistory } from 'src/user-image-history/entities/user-image-history.entity';
+import { DeleteSaveImageToImageHelperRepository } from 'src/save-image-helper/save-image-helper.repository';
 
 @Injectable()
 export class ImageService {
@@ -32,8 +32,8 @@ export class ImageService {
     private readonly categoryRepository: CategoryRepository,
     @InjectRepository(ImageCategoryRepository)
     private readonly imageCategoryRepository: ImageCategoryRepository,
-    @InjectRepository(SaveImageRepository)
-    private readonly saveImageRepository: SaveImageRepository,
+    @InjectRepository(DeleteSaveImageToImageHelperRepository)
+    private readonly deleteSaveImageToImageHelperRepository: DeleteSaveImageToImageHelperRepository,
     @InjectRepository(UserRepository)
     private readonly userRepository: UserRepository,
     @InjectRepository(UserImageHistoryRepository)
@@ -60,15 +60,15 @@ export class ImageService {
       id: createMetaImageDto.userId,
     });
     this.validateUser(user);
-
-    await Promise.all(
-      createMetaImageDto.categoryIds.map(async (categoryId) => {
-        const category = await this.categoryRepository.findOneBy({
-          id: categoryId,
-        });
-        this.validateCategory(category);
-      }),
+    const categories = await Promise.all(
+      createMetaImageDto.categoryIds.map(
+        async (categoryId) =>
+          await this.categoryRepository.findOneBy({
+            id: categoryId,
+          }),
+      ),
     );
+    categories.forEach((category) => this.validateCategory(category));
 
     const image = this.imageRepository.create({
       title: createMetaImageDto.title,
@@ -77,13 +77,11 @@ export class ImageService {
       url: createMetaImageDto.url,
       user: user,
     });
-
     await this.imageRepository.save(image);
 
-    const imageCategories = createMetaImageDto.categoryIds.map((categoryId) => {
-      return this.imageCategoryRepository.create({ image, categoryId });
+    const imageCategories = categories.map((category) => {
+      return this.imageCategoryRepository.create({ image, category });
     });
-
     await this.imageCategoryRepository.save(imageCategories);
 
     return image.id;
@@ -94,28 +92,34 @@ export class ImageService {
     this.validateImage(image);
 
     // await this.deleteS3Image(image);
-    await this.saveImageRepository.deleteSaveImageToImage(image);
+    await this.deleteSaveImageToImageHelperRepository.deleteSaveImageToImage(
+      image,
+    );
+    // TODO: userImageHistory 지워주기.
     await this.imageRepository.remove(image);
 
     return imageId;
   }
 
   async findImage(id: number, userId: number): Promise<GetImageDetailDto> {
-    const image = await this.imageRepository.findOneBy({ id });
+    const image =
+      await this.imageRepository.findImageWithImageReplyWithImageCategory(id);
     this.validateImage(image);
 
     const imageReplyResponses = image.imageReplies.map((imageReply) => {
       return GetImageReplyDto.of(imageReply);
     });
 
-    const imageCategories = image.imageCategories;
-    const categoryIds = imageCategories.map(
-      (imageCategory) => imageCategory.categoryId,
+    const categories = await Promise.all(
+      (
+        await this.imageCategoryRepository.findOneWithCategory(
+          image.imageCategories,
+        )
+      ).map((imageCategory) => imageCategory.category),
     );
-
     const moreImages =
       await this.imageRepository.findImagesWithSimilarCategories(
-        categoryIds,
+        categories,
         id,
       );
 
@@ -127,14 +131,27 @@ export class ImageService {
   }
 
   async getMainImages(userId: number): Promise<GetImageDto[]> {
-    const user = await this.userRepository.findOneBy({ id: userId });
+    const user =
+      await this.userRepository.findOneWithUserImageHistories(userId);
     this.validateUser(user);
 
-    const images = await this.imageRepository.getImageFromImageHistory(user);
-    const categoryIds =
-      await this.imageRepository.getImageCategoryIdFromImages(images);
+    const userImageHistories =
+      await this.userImageHistoryRepository.findUserImageHistoriesWithImages(
+        user.userImageHistories,
+      );
+    // 조회한 이미지.
+    const images = await Promise.all(
+      userImageHistories.map((userImageHistory) => userImageHistory.image),
+    );
+    // 조회한 이미지 카테고리.
+    const imageCategories =
+      await this.imageCategoryRepository.findImageCategoriesFromImages(images);
+    const categories = await Promise.all(
+      imageCategories.map((imageCategory) => imageCategory.category),
+    );
+    // 카테고리 id를 기반으로 뽑은 추천 이미지.
     const recommendRandomImages =
-      await this.imageRepository.getRecommendRandomImages(categoryIds);
+      await this.imageRepository.getRecommendRandomImages(categories);
 
     return GetImageDto.of(recommendRandomImages);
   }
@@ -147,12 +164,17 @@ export class ImageService {
         searchStr,
       );
     const imageCategories =
-      await this.imageCategoryRepository.getCategoryFromSearchWord(searchStr);
+      await this.imageCategoryRepository.getImageCategoryFromSearchWord(
+        searchStr,
+      ); // TODO: Category 중복 제거할 방법 찾기.
+    const categories = await Promise.all(
+      imageCategories.map((imageCategory) => imageCategory.category),
+    );
 
     let categoryRelationalImages = [];
     if (imageCategories.length > 0) {
       categoryRelationalImages =
-        await this.imageRepository.getCategoryRelationalImages(imageCategories);
+        await this.imageRepository.getCategoryRelationalImages(categories);
     }
 
     return GetImageDto.of(
@@ -173,6 +195,7 @@ export class ImageService {
         user,
       });
 
+    this.userImageHistoryRepository.save(userImageHistory);
     user.addImageHistory(userImageHistory);
   }
 

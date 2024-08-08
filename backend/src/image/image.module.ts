@@ -6,18 +6,18 @@ import { Image } from './entities/image.entity';
 import { ImageRepository } from './image.repository';
 import { CategoryModule } from 'src/category/category.module';
 import { ImageCategoryModule } from 'src/image-category/image-category.module';
-import { SaveImageModule } from 'src/save-image/save-image.module';
 import { UserModule } from 'src/user/user.module';
-import { UserImageHistoryRepository } from 'src/user-image-history/user-image-history.repository';
+import { UserImageHistoryModule } from 'src/user-image-history/user-image-history.module';
+import { SaveImageHelperModule } from 'src/save-image-helper/save-image-helper.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Image]),
     CategoryModule,
     ImageCategoryModule,
-    SaveImageModule,
     UserModule,
-    UserImageHistoryRepository,
+    UserImageHistoryModule,
+    SaveImageHelperModule,
   ],
   controllers: [ImageController],
   providers: [ImageService, ImageRepository],

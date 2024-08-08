@@ -10,6 +10,8 @@ import { UserImageHistoryModule } from './user-image-history/user-image-history.
 import { ImageReplyModule } from './image-reply/image-reply.module';
 import { SaveImageModule } from './save-image/save-image.module';
 import { UserModule } from './user/user.module';
+import { JwtProviderModule } from './common/jwt-provider.module';
+import { StorageModule } from './storage/storage.module';
 
 @Module({
   imports: [
@@ -17,6 +19,8 @@ import { UserModule } from './user/user.module';
       isGlobal: true,
     }),
     DatabaseModule,
+    StorageModule,
+    JwtProviderModule,
     UserModule,
     ImageModule,
     CategoryModule,

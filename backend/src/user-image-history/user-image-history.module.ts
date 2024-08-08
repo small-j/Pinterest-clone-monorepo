@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
-import { UserImageHistoryService } from './user-image-history.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserImageHistory } from './entities/user-image-history.entity';
+import { UserImageHistoryRepository } from './user-image-history.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([UserImageHistory])],
-  providers: [UserImageHistoryService],
+  providers: [UserImageHistoryRepository],
+  exports: [UserImageHistoryRepository],
 })
 export class UserImageHistoryModule {}

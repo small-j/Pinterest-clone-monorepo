@@ -4,9 +4,23 @@ import { ImageController } from './image.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Image } from './entities/image.entity';
 import { ImageRepository } from './image.repository';
+import { CategoryModule } from 'src/category/category.module';
+import { ImageCategoryModule } from 'src/image-category/image-category.module';
+import { UserModule } from 'src/user/user.module';
+import { UserImageHistoryModule } from 'src/user-image-history/user-image-history.module';
+import { SaveImageHelperModule } from 'src/save-image-helper/save-image-helper.module';
+import { StorageModule } from 'src/storage/storage.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Image])],
+  imports: [
+    TypeOrmModule.forFeature([Image]),
+    CategoryModule,
+    ImageCategoryModule,
+    UserModule,
+    UserImageHistoryModule,
+    SaveImageHelperModule,
+    StorageModule,
+  ],
   controllers: [ImageController],
   providers: [ImageService, ImageRepository],
   exports: [ImageRepository],

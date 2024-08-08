@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
+import { Controller, Post, Delete, Body, Query } from '@nestjs/common';
 import { SaveImageService } from './save-image.service';
 import { CreateSaveImageDto } from './dto/create-save-image.dto';
 
@@ -7,22 +7,14 @@ export class SaveImageController {
   constructor(private readonly saveImageService: SaveImageService) {}
 
   @Post()
-  create(@Body() createSaveImageDto: CreateSaveImageDto) {
-    return this.saveImageService.create(createSaveImageDto);
+  async addSaveImage(
+    @Body() saveImageRequest: CreateSaveImageDto,
+  ): Promise<number> {
+    return await this.saveImageService.addSaveImage(saveImageRequest);
   }
 
-  @Get()
-  findAll() {
-    return this.saveImageService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.saveImageService.findOne(+id);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.saveImageService.remove(+id);
+  @Delete()
+  async deleteSaveImage(@Query('id') id: number): Promise<number> {
+    return await this.saveImageService.deleteSaveImage(id);
   }
 }

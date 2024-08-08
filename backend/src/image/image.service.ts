@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Inject,
 } from '@nestjs/common';
 import { User } from 'src/user/entities/user.entity';
 import { Category } from 'src/category/entities/category.entity';
@@ -11,10 +12,9 @@ import { ImageRepository } from './image.repository';
 import { CategoryRepository } from 'src/category/category.repository';
 import { ImageCategoryRepository } from 'src/image-category/image-category.repository';
 import { UserRepository } from 'src/user/user.repository';
-// import { StorageManager } from './storage/storage.manager';
 import { ErrorMessage } from 'src/common/enum/error-message';
-// import { GetUploadImageDataDto } from './dto/get-upload-image-data.dto';
-// import { CreateImageDto } from './dto/create-image.dto';
+import { GetUploadImageDataDto } from './dto/get-upload-image-data.dto';
+import { CreateImageDto } from './dto/create-image.dto';
 import { CreateMetaImageDto } from './dto/create-meta-image.dto';
 import { GetImageDetailDto } from './dto/get-image-detail.dto';
 import { GetImageReplyDto } from './dto/get-image-reply.dto';
@@ -22,6 +22,7 @@ import { GetImageDto } from './dto/get-image.dto';
 import { UserImageHistoryRepository } from 'src/user-image-history/user-image-history.repository';
 import { UserImageHistory } from 'src/user-image-history/entities/user-image-history.entity';
 import { DeleteSaveImageToImageHelperRepository } from 'src/save-image-helper/save-image-helper.repository';
+import { CustomStorageManager } from 'src/storage/storage-manager.interface';
 
 @Injectable()
 export class ImageService {
@@ -38,22 +39,23 @@ export class ImageService {
     private readonly userRepository: UserRepository,
     @InjectRepository(UserImageHistoryRepository)
     private readonly userImageHistoryRepository: UserImageHistoryRepository,
-    // private readonly storageManager: StorageManager,
+    @Inject('CustomStorageManager')
+    private readonly storageManager: CustomStorageManager,
   ) {}
 
-  // async uploadImage(
-  //   createImageDto: CreateImageDto,
-  // ): Promise<GetUploadImageDataDto> {
-  //   const key = uuidv4(); // javascript UUID 라이브러리 찾아보기.
-  //   let url = '';
-  //   try {
-  //     url = await this.storageManager.uploadFile(key, createImageDto);
-  //   } catch (error) {
-  //     throw new BadRequestException(ErrorMessage.FAIL_READ_INPUT_STREAM);
-  //   }
+  async uploadImage(
+    createImageDto: CreateImageDto,
+  ): Promise<GetUploadImageDataDto> {
+    const key = crypto.randomUUID();
+    let url = '';
+    try {
+      url = await this.storageManager.uploadFile(key, createImageDto);
+    } catch (error) {
+      throw new BadRequestException(ErrorMessage.FAIL_READ_INPUT_STREAM);
+    }
 
-  //   return new GetUploadImageDataDto(key, url);
-  // }
+    return new GetUploadImageDataDto(key, url);
+  }
 
   async addImage(createMetaImageDto: CreateMetaImageDto): Promise<number> {
     const user = await this.userRepository.findOneBy({
@@ -91,7 +93,7 @@ export class ImageService {
     const image = await this.imageRepository.findOneBy({ id: imageId });
     this.validateImage(image);
 
-    // await this.deleteS3Image(image);
+    await this.deleteS3Image(image);
     await this.deleteSaveImageToImageHelperRepository.deleteSaveImageToImage(
       image,
     );
@@ -223,9 +225,9 @@ export class ImageService {
     }
   }
 
-  // private async deleteS3Image(image: Image): Promise<void> {
-  //   await this.storageManager.deleteFile(image.key);
-  // }
+  private async deleteS3Image(image: Image): Promise<void> {
+    await this.storageManager.deleteFile(image.key);
+  }
 
   private combineList(a: Image[], b: Image[]): Image[] {
     const result = new Map<number, Image>();

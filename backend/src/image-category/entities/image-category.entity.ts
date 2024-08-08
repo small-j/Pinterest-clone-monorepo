@@ -1,3 +1,4 @@
+import { Category } from 'src/category/entities/category.entity';
 import { BaseTime } from 'src/common/entities/base-time';
 import { Image } from 'src/image/entities/image.entity';
 import {
@@ -17,24 +18,25 @@ export class ImageCategory {
   @JoinColumn({ name: 'image_meta_id' })
   image: Image;
 
-  @Column()
-  categoryId: number;
+  @ManyToOne(() => Category, { lazy: true })
+  @JoinColumn({ name: 'category_id' })
+  category: Category;
 
   @Column(() => BaseTime)
   baseTime: BaseTime;
 
-  constructor(image?: Image, categoryId?: number) {
+  constructor(image?: Image, category?: Category) {
     if (image) {
       this.image = image;
     }
-    if (categoryId) {
-      this.categoryId = categoryId;
+    if (category) {
+      this.category = category;
     }
   }
 
-  static create(image: Image, categoryId: number): ImageCategory {
+  static create(image: Image, category: Category): ImageCategory {
     const imageCategory = new ImageCategory();
-    imageCategory.categoryId = categoryId;
+    imageCategory.category = category;
     imageCategory.image = image;
     image.addCategory(imageCategory);
     return imageCategory;

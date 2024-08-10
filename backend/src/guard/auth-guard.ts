@@ -1,6 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { authGuardIgnorePath } from 'src/common/auth-guard-ignore-path';
+import { authGuardIgnorePath } from 'src/common/auth/auth-guard-ignore-path';
 import { JwtProviderService } from 'src/common/jwt-provider.service';
 
 @Injectable()

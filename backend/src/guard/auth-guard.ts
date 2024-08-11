@@ -1,5 +1,9 @@
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
-import { Observable } from 'rxjs';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+} from '@nestjs/common';
 import { authGuardIgnorePath } from 'src/common/auth/auth-guard-ignore-path';
 import { JwtProviderService } from 'src/common/jwt-provider.service';
 
@@ -7,9 +11,7 @@ import { JwtProviderService } from 'src/common/jwt-provider.service';
 export class AuthGuard implements CanActivate {
   constructor(private readonly jwtService: JwtProviderService) {}
 
-  canActivate(
-    context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     if (context.getType() !== 'http') return false;
 
     const request = context.switchToHttp().getRequest();
@@ -21,7 +23,11 @@ export class AuthGuard implements CanActivate {
 
     if (token && this.jwtService.validateToken(token)) {
       const email = this.jwtService.getEmailFromJwtToken(token);
-      request.email = email;
+      const user = await this.jwtService.getUserFromEmail(email);
+      console.log(user);
+
+      if (!user) throw new ForbiddenException();
+      request.user = user;
       return true;
     }
 

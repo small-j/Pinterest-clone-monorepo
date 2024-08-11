@@ -21,21 +21,19 @@ export class RoleService {
     private readonly imageReplyRepository: FindImageReplyWithUserHelperRepository,
   ) {}
 
-  async validate(className: string, email: string, id: number) {
-    let user: User | null = null;
+  async validate(className: string, user: User, id: number) {
+    let dataOwner: User | null = null;
+
+    if (user.getRoleList().includes(Role.Admin)) return true;
 
     if (className.includes('SaveImage'))
-      user = await this.getUserFromSaveImage(id);
+      dataOwner = await this.getUserFromSaveImage(id);
     else if (className.includes('ImageReply'))
-      user = await this.getUserFromImageReply(id);
+      dataOwner = await this.getUserFromImageReply(id);
     else if (className.includes('Image'))
-      user = await this.getUserFromImage(id);
+      dataOwner = await this.getUserFromImage(id);
 
-    if (
-      user &&
-      (user.email === email || user.getRoleList().includes(Role.Admin))
-    )
-      return true;
+    if (dataOwner && dataOwner.email === user.email) return true;
     else return false;
   }
 

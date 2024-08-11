@@ -16,6 +16,7 @@ import { RolesGuard } from './guard/roles-guard';
 import { RoleModule } from './common/auth/role.module';
 import { SaveImageHelperModule } from './save-image-helper/save-image-helper.module';
 import { ImageReplyHelperModule } from './image-reply-helper/image-reply-helper.module';
+import { UserHelperModule } from './user-helper/user-helper.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { ImageReplyHelperModule } from './image-reply-helper/image-reply-helper.
     SaveImageModule,
     SaveImageHelperModule,
     ImageReplyHelperModule,
+    UserHelperModule,
   ],
   controllers: [AppController],
   providers: [AppService, RolesGuard],

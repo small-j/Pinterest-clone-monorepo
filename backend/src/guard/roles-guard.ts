@@ -5,6 +5,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { RoleService } from 'src/common/auth/role.service';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -12,13 +13,13 @@ export class RolesGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const email = request.email;
+    const user: User = request.user;
     const id = request.query.id;
-    if (!email || !id) throw new ForbiddenException();
+    if (!user || !id) throw new ForbiddenException();
 
     const flag = await this.roleService.validate(
       context.getClass().toString(),
-      email,
+      user,
       id,
     );
     if (flag) return true;

@@ -12,6 +12,11 @@ import { SaveImageModule } from './save-image/save-image.module';
 import { UserModule } from './user/user.module';
 import { JwtProviderModule } from './common/jwt-provider.module';
 import { StorageModule } from './storage/storage.module';
+import { RolesGuard } from './guard/roles-guard';
+import { RoleModule } from './common/auth/role.module';
+import { SaveImageHelperModule } from './save-image-helper/save-image-helper.module';
+import { ImageReplyHelperModule } from './image-reply-helper/image-reply-helper.module';
+import { UserHelperModule } from './user-helper/user-helper.module';
 
 @Module({
   imports: [
@@ -21,6 +26,7 @@ import { StorageModule } from './storage/storage.module';
     DatabaseModule,
     StorageModule,
     JwtProviderModule,
+    RoleModule,
     UserModule,
     ImageModule,
     CategoryModule,
@@ -28,8 +34,11 @@ import { StorageModule } from './storage/storage.module';
     UserImageHistoryModule,
     ImageReplyModule,
     SaveImageModule,
+    SaveImageHelperModule,
+    ImageReplyHelperModule,
+    UserHelperModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, RolesGuard],
 })
 export class AppModule {}

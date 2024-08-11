@@ -1,6 +1,14 @@
-import { Controller, Post, Delete, Body, Query } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Delete,
+  Body,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ImageReplyService } from './image-reply.service';
 import { CreateImageReplyDto } from './dto/create-image-reply.dto';
+import { RolesGuard } from 'src/guard/roles-guard';
 
 @Controller('reply')
 export class ImageReplyController {
@@ -14,6 +22,7 @@ export class ImageReplyController {
   }
 
   @Delete()
+  @UseGuards(RolesGuard)
   async deleteReply(@Query('id') id: number): Promise<number> {
     return await this.imageReplyService.deleteReply(id);
   }

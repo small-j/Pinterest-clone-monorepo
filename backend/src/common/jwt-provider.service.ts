@@ -1,8 +1,10 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService, TokenExpiredError } from '@nestjs/jwt';
+import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/user/entities/user.entity';
 import { JwtTokenHeaderFormDto } from './dto/jwt-token-header-form.dto';
 import { ConfigService } from '@nestjs/config';
+import { FindUserByImageHelperRepository } from 'src/user-helper/user-helper.repository';
+import { InjectRepository } from '@nestjs/typeorm';
 
 interface Payload {
   sub: string;
@@ -13,6 +15,8 @@ export class JwtProviderService {
   constructor(
     private jwtService: JwtService,
     private configService: ConfigService,
+    @InjectRepository(FindUserByImageHelperRepository)
+    private readonly userRepository: FindUserByImageHelperRepository,
   ) {}
 
   createJwtToken(user: User): string {
@@ -60,5 +64,9 @@ export class JwtProviderService {
   getEmailFromJwtToken(token: string): string {
     const payload = this.jwtService.decode<Payload>(token);
     return payload.sub;
+  }
+
+  async getUserFromEmail(email: string) {
+    return await this.userRepository.findUserByEmail(email);
   }
 }

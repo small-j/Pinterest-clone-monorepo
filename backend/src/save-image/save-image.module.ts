@@ -6,9 +6,15 @@ import { SaveImage } from './entities/save-image.entity';
 import { SaveImageRepository } from './save-image.repository';
 import { ImageModule } from 'src/image/image.module';
 import { UserModule } from 'src/user/user.module';
+import { RoleModule } from 'src/common/auth/role.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([SaveImage]), UserModule, ImageModule],
+  imports: [
+    TypeOrmModule.forFeature([SaveImage]),
+    UserModule,
+    ImageModule,
+    RoleModule,
+  ],
   controllers: [SaveImageController],
   providers: [SaveImageService, SaveImageRepository],
   exports: [SaveImageRepository],

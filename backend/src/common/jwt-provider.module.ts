@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtProviderService } from './jwt-provider.service';
+import { UserHelperModule } from 'src/user-helper/user-helper.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { JwtProviderService } from './jwt-provider.service';
         },
       }),
     }),
+    UserHelperModule,
   ],
   providers: [JwtProviderService],
   exports: [JwtProviderService],

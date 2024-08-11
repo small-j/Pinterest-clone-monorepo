@@ -10,6 +10,7 @@ import { UserModule } from 'src/user/user.module';
 import { UserImageHistoryModule } from 'src/user-image-history/user-image-history.module';
 import { SaveImageHelperModule } from 'src/save-image-helper/save-image-helper.module';
 import { StorageModule } from 'src/storage/storage.module';
+import { RoleModule } from 'src/common/auth/role.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { StorageModule } from 'src/storage/storage.module';
     UserImageHistoryModule,
     SaveImageHelperModule,
     StorageModule,
+    RoleModule,
   ],
   controllers: [ImageController],
   providers: [ImageService, ImageRepository],

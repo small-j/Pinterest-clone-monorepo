@@ -7,6 +7,7 @@ import {
   Query,
   UploadedFile,
   UseInterceptors,
+  UseGuards,
 } from '@nestjs/common';
 import { ImageService } from './image.service';
 import { CreateImageDto } from './dto/create-image.dto';
@@ -15,6 +16,7 @@ import { CreateMetaImageDto } from './dto/create-meta-image.dto';
 import { GetImageDetailDto } from './dto/get-image-detail.dto';
 import { GetImageDto } from './dto/get-image.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { RolesGuard } from 'src/guard/roles-guard';
 
 @Controller('image')
 export class ImageController {
@@ -37,6 +39,7 @@ export class ImageController {
   }
 
   @Delete()
+  @UseGuards(RolesGuard)
   async deleteImage(@Query('id') id: number): Promise<number> {
     return await this.imageService.deleteImage(id);
   }

@@ -13,3 +13,19 @@ export class DeleteSaveImageToImageHelperRepository extends Repository<SaveImage
     await this.delete({ image });
   }
 }
+
+@Injectable()
+export class FindSaveImageWithUserHelperRepository extends Repository<SaveImage> {
+  constructor(private dataSource: DataSource) {
+    super(SaveImage, dataSource.createEntityManager());
+  }
+
+  async findOneWithUser(id: number) {
+    return await this.findOne({
+      where: {
+        id,
+      },
+      relations: ['user'],
+    });
+  }
+}

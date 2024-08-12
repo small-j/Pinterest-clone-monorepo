@@ -1,9 +1,10 @@
 import './App.css';
+import { CardWithForm } from './components/image/ImageCard';
 
 function App() {
   return (
     <div className="App">
-      <div></div>
+      <CardWithForm></CardWithForm>
     </div>
   );
 }

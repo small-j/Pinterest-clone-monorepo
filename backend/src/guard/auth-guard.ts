@@ -24,7 +24,6 @@ export class AuthGuard implements CanActivate {
     if (token && this.jwtService.validateToken(token)) {
       const email = this.jwtService.getEmailFromJwtToken(token);
       const user = await this.jwtService.getUserFromEmail(email);
-      console.log(user);
 
       if (!user) throw new ForbiddenException();
       request.user = user;

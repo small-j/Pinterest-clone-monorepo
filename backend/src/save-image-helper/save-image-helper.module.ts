@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import {
   DeleteSaveImageToImageHelperRepository,
   FindSaveImageWithUserHelperRepository,
+  FindSaveImgeWithImagesHelperRepository,
 } from './save-image-helper.repository';
 import { SaveImage } from 'src/save-image/entities/save-image.entity';
 
@@ -11,10 +12,12 @@ import { SaveImage } from 'src/save-image/entities/save-image.entity';
   providers: [
     DeleteSaveImageToImageHelperRepository,
     FindSaveImageWithUserHelperRepository,
+    FindSaveImgeWithImagesHelperRepository,
   ],
   exports: [
     DeleteSaveImageToImageHelperRepository,
     FindSaveImageWithUserHelperRepository,
+    FindSaveImgeWithImagesHelperRepository,
   ],
 })
 export class SaveImageHelperModule {}

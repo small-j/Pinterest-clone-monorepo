@@ -3,6 +3,7 @@ import { GetImageReplyDto } from './get-image-reply.dto';
 import { GetImageDto } from './get-image.dto';
 
 export class GetImageDetailDto {
+  // TODO: user 정보 추가.
   id: number;
   title: string;
   content: string;

@@ -17,6 +17,8 @@ import { GetImageDetailDto } from './dto/get-image-detail.dto';
 import { GetImageDto } from './dto/get-image.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { RolesGuard } from 'src/guard/roles-guard';
+import { AuthUser } from 'src/decorator/auth-user.decorator';
+import { User } from 'src/user/entities/user.entity';
 
 @Controller('image')
 export class ImageController {
@@ -60,7 +62,7 @@ export class ImageController {
   }
 
   @Get('/main')
-  async mainImage(@Query('user-id') id: number): Promise<GetImageDto[]> {
-    return await this.imageService.getMainImages(id);
+  async mainImage(@AuthUser() user: User): Promise<GetImageDto[]> {
+    return await this.imageService.getMainImages(user);
   }
 }

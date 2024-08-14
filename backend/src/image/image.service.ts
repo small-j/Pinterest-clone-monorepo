@@ -134,14 +134,12 @@ export class ImageService {
     return GetImageDetailDto.of(image, imageReplyResponses, moreImages);
   }
 
-  async getMainImages(userId: number): Promise<GetImageDto[]> {
-    const user =
-      await this.userRepository.findOneWithUserImageHistories(userId);
+  async getMainImages(user: User): Promise<GetImageDto[]> {
     this.validateUser(user);
 
     const userImageHistories =
       await this.userImageHistoryRepository.findUserImageHistoriesWithImages(
-        user.userImageHistories,
+        user.id,
       );
     // 조회한 이미지.
     const images = await Promise.all(

@@ -49,7 +49,6 @@ export class UserService {
     this.validateUser(user);
 
     const saveImages = await user.saveImages;
-    console.log(saveImages);
     const images =
       typeof saveImages === 'undefined'
         ? []

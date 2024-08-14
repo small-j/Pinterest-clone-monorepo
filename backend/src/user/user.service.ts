@@ -11,12 +11,15 @@ import { LoginInfoDto } from './dto/login-info.dto';
 import { UserInfoeDto } from './dto/user-info.dto';
 import { ErrorMessage } from 'src/common/enum/error-message';
 import { UserRepository } from './user.repository';
+import { FindSaveImgeWithImagesHelperRepository } from 'src/save-image-helper/save-image-helper.repository';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(UserRepository)
     private readonly userRepository: UserRepository,
+    @InjectRepository(FindSaveImgeWithImagesHelperRepository)
+    private readonly saveImageRepository: FindSaveImgeWithImagesHelperRepository,
   ) {}
 
   async register(userRequest: CreateUserDto): Promise<number> {
@@ -45,14 +48,17 @@ export class UserService {
   }
 
   async getUserInfo(id: number): Promise<UserInfoeDto> {
-    const user = await this.userRepository.findOneBy({ id: id });
+    const user = await this.userRepository.findOneWithSaveImages(id);
     this.validateUser(user);
 
-    const saveImages = await user.saveImages;
-    const images =
+    const saveImages = await this.saveImageRepository.findSaveImagesWithImage(
+      user.saveImages,
+    );
+    const images = await Promise.all(
       typeof saveImages === 'undefined'
         ? []
-        : saveImages.map((saveImage) => saveImage.image); // TODO: n + 1 문제 개선.
+        : saveImages.map((saveImage) => saveImage.image),
+    );
 
     return UserInfoeDto.of(user, images);
   }

@@ -14,4 +14,11 @@ export class UserRepository extends Repository<User> {
       relations: ['userImageHistories'],
     });
   }
+
+  async findOneWithSaveImages(id: number): Promise<User> {
+    return await this.findOne({
+      where: { id },
+      relations: ['saveImages'],
+    });
+  }
 }

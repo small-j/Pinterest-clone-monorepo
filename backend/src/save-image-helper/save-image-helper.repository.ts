@@ -29,3 +29,23 @@ export class FindSaveImageWithUserHelperRepository extends Repository<SaveImage>
     });
   }
 }
+
+@Injectable()
+export class FindSaveImgeWithImagesHelperRepository extends Repository<SaveImage> {
+  constructor(private dataSource: DataSource) {
+    super(SaveImage, dataSource.createEntityManager());
+  }
+
+  async findSaveImagesWithImage(saveImages: SaveImage[]): Promise<SaveImage[]> {
+    const query = this.manager
+      .createQueryBuilder(SaveImage, 'a')
+      .innerJoinAndSelect('a.image', 'b');
+
+    if (saveImages.length !== 0)
+      query.where('a.id IN (:...saveImageIds)', {
+        saveImageIds: saveImages.map((saveImage) => saveImage.id),
+      });
+
+    return query.getMany();
+  }
+}

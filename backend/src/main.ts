@@ -5,6 +5,11 @@ import { JwtProviderService } from './common/jwt-provider.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors({
+    origin: true,
+    credentials: true,
+    exposedHeaders: ['Authorization'],
+  });
 
   const jwtProviderService = app.get(JwtProviderService);
   app.useGlobalGuards(new AuthGuard(jwtProviderService));

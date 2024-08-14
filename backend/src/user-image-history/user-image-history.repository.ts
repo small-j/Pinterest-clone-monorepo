@@ -10,18 +10,13 @@ export class UserImageHistoryRepository extends Repository<UserImageHistory> {
   }
 
   async findUserImageHistoriesWithImages(
-    userImageHistories: UserImageHistory[],
+    userId: number,
   ): Promise<UserImageHistory[]> {
     const query = this.manager
       .createQueryBuilder(UserImageHistory, 'a')
-      .innerJoinAndSelect('a.image', 'b');
-
-    if (userImageHistories.length !== 0)
-      query.where('a.id IN (:...userImageHistoryIds)', {
-        userImageHistoryIds: userImageHistories.map(
-          (userImageHistory) => userImageHistory.id,
-        ),
-      });
+      .innerJoin('a.user', 'c')
+      .innerJoinAndSelect('a.image', 'b')
+      .where('c.id=(:userId)', { userId });
 
     return query.getMany();
   }

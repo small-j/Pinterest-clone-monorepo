@@ -8,3 +8,5 @@ export interface Response<T> {
     data: T;
     success: boolean;
 }
+
+export type ResponseCallback<T> = (data: Response<T> | ErrorResponse) => void;

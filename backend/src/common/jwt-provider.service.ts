@@ -5,6 +5,7 @@ import { JwtTokenHeaderFormDto } from './dto/jwt-token-header-form.dto';
 import { ConfigService } from '@nestjs/config';
 import { FindUserByImageHelperRepository } from 'src/user-helper/user-helper.repository';
 import { InjectRepository } from '@nestjs/typeorm';
+import { UsereDto } from 'src/user/dto/user.dto';
 
 interface Payload {
   sub: string;
@@ -19,7 +20,7 @@ export class JwtProviderService {
     private readonly userRepository: FindUserByImageHelperRepository,
   ) {}
 
-  createJwtToken(user: User): string {
+  createJwtToken(user: UsereDto): string {
     const payload: Payload = { sub: user.email };
 
     return this.jwtService.sign(payload);

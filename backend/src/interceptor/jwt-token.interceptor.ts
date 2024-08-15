@@ -8,9 +8,9 @@ import type { Response } from 'express';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { User } from 'src/user/entities/user.entity';
 import { JwtTokenHeaderFormDto } from 'src/common/dto/jwt-token-header-form.dto';
 import { JwtProviderService } from 'src/common/jwt-provider.service';
+import { UsereDto } from 'src/user/dto/user.dto';
 
 @Injectable()
 export class JwtTokenInterceptor implements NestInterceptor {
@@ -18,8 +18,8 @@ export class JwtTokenInterceptor implements NestInterceptor {
 
   intercept(
     context: ExecutionContext,
-    call$: CallHandler<User>,
-  ): Observable<string> {
+    call$: CallHandler<UsereDto>,
+  ): Observable<any> {
     return call$.handle().pipe(
       map((user) => {
         const response = context.switchToHttp().getResponse<Response>();
@@ -28,7 +28,7 @@ export class JwtTokenInterceptor implements NestInterceptor {
           this.jwtProvider.getJwtTokenHeaderForm(token);
 
         response.setHeader(headerName, jwtToken);
-        return 'login success';
+        return user;
       }),
     );
   }

@@ -12,6 +12,7 @@ import { UserInfoeDto } from './dto/user-info.dto';
 import { ErrorMessage } from 'src/common/enum/error-message';
 import { UserRepository } from './user.repository';
 import { FindSaveImgeWithImagesHelperRepository } from 'src/save-image-helper/save-image-helper.repository';
+import { UsereDto } from './dto/user.dto';
 
 @Injectable()
 export class UserService {
@@ -39,12 +40,12 @@ export class UserService {
     }
   }
 
-  async login(loginInfoRequest: LoginInfoDto): Promise<User> {
+  async login(loginInfoRequest: LoginInfoDto): Promise<UsereDto> {
     const user = await this.findUserByEmail(loginInfoRequest.email);
     this.validateUser(user);
     await this.isEqualPassword(user, loginInfoRequest.password);
 
-    return user;
+    return UsereDto.of(user);
   }
 
   async getUserInfo(id: number): Promise<UserInfoeDto> {

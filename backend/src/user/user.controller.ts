@@ -12,8 +12,8 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginInfoDto } from './dto/login-info.dto';
 import { UserInfoeDto } from './dto/user-info.dto';
-import { User } from './entities/user.entity';
 import { JwtTokenInterceptor } from 'src/interceptor/jwt-token.interceptor';
+import { UsereDto } from './dto/user.dto';
 
 @Controller('user')
 export class UserController {
@@ -28,7 +28,7 @@ export class UserController {
   @Post('/login')
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(JwtTokenInterceptor)
-  async login(@Body() loginInfoRequest: LoginInfoDto): Promise<User> {
+  async login(@Body() loginInfoRequest: LoginInfoDto): Promise<UsereDto> {
     return await this.userService.login(loginInfoRequest);
   }
 

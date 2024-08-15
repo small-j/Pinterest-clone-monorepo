@@ -28,21 +28,21 @@ function JoinForm() {
       className="flex flex-col items-center w-full"
       onSubmit={handleSubmit((data) => requestJoin(data))}
     >
-      <h2>Join</h2>
+      <h1 className='text-2xl'>회원가입</h1>
       <div className="control mt-1 w-full">
         <Label>Name</Label>
         <Input {...register('name', { required: true })} />
-        {errors.name && <p>Name is required.</p>}
+        {errors.name && <p>{errors.name.message?.toString() || '이름은 필수입니다.'}</p>}
       </div>
       <div className="control mt-1 w-full">
         <Label>Email</Label>
         <Input {...register('email', { required: true })} />
-        {errors.email && <p>Email is required.</p>}
+        {errors.email && <p>{errors.email.message?.toString() || '이메일은 필수입니다.'}</p>}
       </div>
       <div className="control mt-1 w-full">
         <Label>Password</Label>
         <Input type="password" {...register('password', { required: true })} />
-        {errors.password && <p>Password is required.</p>}
+        {errors.password && <p>{errors.password.message?.toString() || '비밀번호는 필수입니다.'}</p>}
       </div>
       <Button className='mt-4 w-full' type='submit'>회원가입</Button>
     </form>

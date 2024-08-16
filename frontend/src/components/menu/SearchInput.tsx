@@ -7,7 +7,7 @@ interface Props {
 
 function SearchInput({ className = '' }: Props) {
   const navigate = useNavigate();
-  const [value, setValue] = useState<string>();
+  const [value, setValue] = useState<string>('');
 
   const inputHandler = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && value) {

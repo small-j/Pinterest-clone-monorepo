@@ -1,28 +1,15 @@
-import { useEffect, useState } from 'react';
 import ImagePin from './ImagePin';
 import { ErrorResponse, Response } from '@/src/api/types/common.data.type';
 import { ImagePins } from '@/src/api/types/image.data.type';
 import EmptyImagePin from './EmptyImagePin';
 
 interface Props {
-  getDataFunc: (
-    callback: (res: ErrorResponse | Response<ImagePins>) => void,
-  ) => void;
+  imageDatas: ErrorResponse | Response<ImagePins> | undefined;
 }
 
-function ImagePinList({ getDataFunc }: Props) {
-  const [imageDatas, setImageDatas] = useState<
-    ErrorResponse | Response<ImagePins>
-  >();
-
-  useEffect(() => {
-    getDataFunc((res) => {
-      setImageDatas(res);
-    });
-  }, []);
-
+function ImagePinList({ imageDatas }: Props) {
   const isErrorResponse = (
-    response: ErrorResponse | Response<ImagePins> | undefined,
+    response: Response<ImagePins> | ErrorResponse | undefined,
   ): response is ErrorResponse => {
     return !!response && response.success === false;
   };

@@ -7,3 +7,4 @@ export interface ImagePins {
 }
 
 export type MainImage = ImagePins;
+export type SearchImage = ImagePins;

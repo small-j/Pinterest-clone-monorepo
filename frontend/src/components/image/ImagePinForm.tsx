@@ -2,14 +2,27 @@ import { FieldValues, useForm } from 'react-hook-form';
 import { Label } from '../shadcn/ui/label';
 import { Input } from '../shadcn/ui/input';
 import { Textarea } from '../shadcn/ui/textarea';
-import { useEffect, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import CategoryCombobox from '../category/CategoryCombobox';
 import { CategoryInfo } from '../../api/types/category.data.type';
 import CategoryBadgeList from '../category/CategoryBadgeList';
 import { getCategories } from '../../api/category.api';
 import { ErrorResponse, Response } from '@/src/api/types/common.data.type';
+import { FileInfo, CreateImagePinInfo } from '../../api/types/image.data.type';
 
-function ImagePinForm() {
+interface Props {
+  imageUploadedData: FileInfo | undefined | null;
+  requestCreateImageMeta: (data: CreateImagePinInfo) => void;
+}
+
+export interface ExportedMethods {
+  submitForm: () => void;
+}
+
+const ImagePinForm = forwardRef(function ImagePinForm(
+  { imageUploadedData, requestCreateImageMeta }: Props,
+  formRef,
+) {
   const {
     register,
     handleSubmit,
@@ -29,6 +42,14 @@ function ImagePinForm() {
       setCategories(res);
     });
   }, []);
+
+  useImperativeHandle(formRef, () => ({
+    submitForm: () => {
+      handleSubmit((data) => {
+        getImagePinFormData(data);
+      })();
+    },
+  }));
 
   const isErrorResponse = (
     response: Response<CategoryInfo[]> | ErrorResponse | undefined,
@@ -59,20 +80,31 @@ function ImagePinForm() {
   };
 
   const getSelectedCategories = (): CategoryInfo[] => {
-    return categories?.data?.filter((category) => categoryIds.has(category.id)) || [];
+    return (
+      categories?.data?.filter((category) => categoryIds.has(category.id)) || []
+    );
   };
 
-  const requestCreateImageMeta = (data: FieldValues) => {};
+  const getImagePinFormData = (data: FieldValues) => {
+    if (!imageUploadedData) return;
+    requestCreateImageMeta({
+      title: data.title,
+      content: data.content,
+      ...imageUploadedData?.fileMetaData,
+      categoryIds: selectedCategories.map(
+        (selectedCategory) => selectedCategory.id,
+      ),
+    });
+  };
 
   return (
     <>
-      {!categories && <div>loading..</div>}
-      {isErrorResponse(categories) && <div>{categories.errorMessage}</div>}
+      {!categories && <div className="w-full">loading..</div>}
+      {isErrorResponse(categories) && (
+        <div className="w-full">{categories.errorMessage}</div>
+      )}
       {categories?.success && categories.data && (
-        <form
-          className="flex flex-col items-center w-full space-y-6"
-          onSubmit={handleSubmit((data) => requestCreateImageMeta(data))}
-        >
+        <form className="flex flex-col items-center w-full space-y-6">
           <div className="control mt-1 w-full">
             <Label>제목</Label>
             <Input
@@ -107,5 +139,6 @@ function ImagePinForm() {
       )}
     </>
   );
-}
+});
+
 export default ImagePinForm;

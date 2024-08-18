@@ -23,6 +23,7 @@ function ImageSelect({ uploadFile, imageUploadedData }: Props) {
             </div>
           </label>
           <Input
+            className='hidden'
             type="file"
             accept="image/jpg,impge/png,image/jpeg"
             id="input-file"

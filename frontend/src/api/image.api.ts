@@ -1,6 +1,6 @@
 import { commonValue } from './common.value';
 import { ErrorResponse, Response, ResponseCallback } from './types/common.data.type';
-import { FileInfo, MainImage, SearchImage } from './types/image.data.type';
+import { FileInfo, CreateImagePinInfo, MainImage, SearchImage, ImagePin } from './types/image.data.type';
 
 const PREFIX_URL = '/image';
 
@@ -105,9 +105,37 @@ function imageFileDataAdaptor(res: FileInfoResponse): Response<FileInfo> {
     data: {
       fileMetaData:
         {
+          key: res.key,
           url: res.url,
         },
     },
     success: true,
   };
+}
+
+export async function createImagePin(
+  imagePinInfo: CreateImagePinInfo,
+  callback: (data: Response<ImagePin> | ErrorResponse) => void,
+) {
+  try {
+    const result = await fetch(`${commonValue.ORIGIN}${PREFIX_URL}/meta`, {
+      method: 'POST',
+      body: JSON.stringify({
+        title: imagePinInfo.title,
+        content: imagePinInfo.content,
+        key: imagePinInfo.key,
+        url: imagePinInfo.url,
+        categoryIds: imagePinInfo.categoryIds,
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+        [commonValue.TOKEN_HEADER]: commonValue.ACCESS_TOKEN,
+      },
+      credentials: "include",
+    }).then((res) => res.json());
+
+    return callback({ data: result, success: true });
+  } catch {
+    callback({ data: null, errorMessage: '이미지 pin 생성 실패', success: false });
+  }
 }

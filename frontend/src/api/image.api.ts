@@ -1,10 +1,11 @@
 import { commonValue } from './common.value';
 import { ErrorResponse, Response, ResponseCallback } from './types/common.data.type';
-import { MainImage, SearchImage } from './types/image.data.type';
+import { FileInfo, MainImage, SearchImage } from './types/image.data.type';
 
 const PREFIX_URL = '/image';
 
 type MainImageResponse = { id: number; url: string }[];
+type FileInfoResponse = { key: string, url: string };
 
 export async function getMainImages(
   callback: (data: Response<MainImage> | ErrorResponse) => void,
@@ -68,6 +69,44 @@ function searchImageDataAdaptor(res: SearchImageResponse): Response<SearchImage>
           id: d.id,
           url: d.url,
         })),
+    },
+    success: true,
+  };
+}
+
+export async function uploadImage(
+  file: File,
+  callback: (data: Response<FileInfo> | ErrorResponse) => void,
+) {
+  const formData = new FormData();
+  formData.append('file', file);
+  try {
+    const result = await fetch(`${commonValue.ORIGIN}${PREFIX_URL}`, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        [commonValue.TOKEN_HEADER]: commonValue.ACCESS_TOKEN,
+      },
+      credentials: "include",
+    }).then((res) => {
+      console.log(res);
+      if (res.status !== 201) throw new Error();
+      return res.json()
+    });
+
+    return callback(imageFileDataAdaptor(result));
+  } catch {
+    callback({ data: null, errorMessage: '이미지 업로드 실패', success: false });
+  }
+}
+
+function imageFileDataAdaptor(res: FileInfoResponse): Response<FileInfo> {
+  return {
+    data: {
+      fileMetaData:
+        {
+          url: res.url,
+        },
     },
     success: true,
   };

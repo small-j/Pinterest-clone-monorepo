@@ -3,8 +3,14 @@
 */
 
 export interface ImagePins {
-    images: { id: number, url: string }[] | void[];
+  images: { id: number; url: string }[] | void[];
 }
 
 export type MainImage = ImagePins;
 export type SearchImage = ImagePins;
+
+export interface FileInfo {
+  fileMetaData: {
+    url: string;
+  };
+}

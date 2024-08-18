@@ -57,10 +57,10 @@ export class ImageService {
     return new GetUploadImageDataDto(key, url);
   }
 
-  async addImage(createMetaImageDto: CreateMetaImageDto): Promise<number> {
-    const user = await this.userRepository.findOneBy({
-      id: createMetaImageDto.userId,
-    });
+  async addImage(
+    user: User,
+    createMetaImageDto: CreateMetaImageDto,
+  ): Promise<GetImageDto> {
     this.validateUser(user);
     const categories = await Promise.all(
       createMetaImageDto.categoryIds.map(
@@ -86,7 +86,7 @@ export class ImageService {
     });
     await this.imageCategoryRepository.save(imageCategories);
 
-    return image.id;
+    return new GetImageDto(image.id, image.url);
   }
 
   async deleteImage(imageId: number): Promise<number> {

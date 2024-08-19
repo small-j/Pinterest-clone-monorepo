@@ -1,11 +1,40 @@
 import { commonValue } from './common.value';
-import { ErrorResponse, Response, ResponseCallback } from './types/common.data.type';
-import { FileInfo, CreateImagePinInfo, MainImage, SearchImage, ImagePin } from './types/image.data.type';
+import {
+  ErrorResponse,
+  Response,
+  ResponseCallback,
+} from './types/common.data.type';
+import {
+  FileInfo,
+  CreateImagePinInfo,
+  MainImage,
+  SearchImage,
+  ImagePin,
+  ImageDetailsInfo,
+} from './types/image.data.type';
 
 const PREFIX_URL = '/image';
 
 type MainImageResponse = { id: number; url: string }[];
-type FileInfoResponse = { key: string, url: string };
+type FileInfoResponse = { key: string; url: string };
+type ImageDetailsResponse = {
+  id: number;
+  title: string;
+  content: string;
+  imageUrl: string;
+  userId: number;
+  userName: string;
+  userEmail: string;
+  imageReplies: ImageReplyResponse[];
+  moreImages: MoreImageResponse;
+};
+type ImageReplyResponse = {
+  replyId: number;
+  replyContent: string;
+  userId: number;
+  userName: string;
+};
+type MoreImageResponse = { id: number; url: string }[];
 
 export async function getMainImages(
   callback: (data: Response<MainImage> | ErrorResponse) => void,
@@ -16,7 +45,7 @@ export async function getMainImages(
         'Content-Type': 'application/json',
         [commonValue.TOKEN_HEADER]: commonValue.ACCESS_TOKEN,
       },
-      credentials: "include",
+      credentials: 'include',
     }).then((res) => res.json());
 
     callback(mainImageDataAdaptor(result));
@@ -28,11 +57,10 @@ export async function getMainImages(
 function mainImageDataAdaptor(res: MainImageResponse): Response<MainImage> {
   return {
     data: {
-      images:
-        res.map((d) => ({
-          id: d.id,
-          url: d.url,
-        })),
+      images: res.map((d) => ({
+        id: d.id,
+        url: d.url,
+      })),
     },
     success: true,
   };
@@ -45,14 +73,16 @@ export async function getSearchImages(
   callback: ResponseCallback<SearchImage>,
 ) {
   try {
-    const params = new URLSearchParams({ 'search-word': searchWord }).toString();
+    const params = new URLSearchParams({
+      'search-word': searchWord,
+    }).toString();
     const url = `${commonValue.ORIGIN}${PREFIX_URL}/search?${params}`;
     const result = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
         [commonValue.TOKEN_HEADER]: commonValue.ACCESS_TOKEN,
       },
-      credentials: "include",
+      credentials: 'include',
     }).then((res) => res.json());
 
     callback(searchImageDataAdaptor(result));
@@ -61,14 +91,69 @@ export async function getSearchImages(
   }
 }
 
-function searchImageDataAdaptor(res: SearchImageResponse): Response<SearchImage> {
+function searchImageDataAdaptor(
+  res: SearchImageResponse,
+): Response<SearchImage> {
   return {
     data: {
-      images:
-        res.map((d) => ({
-          id: d.id,
-          url: d.url,
+      images: res.map((d) => ({
+        id: d.id,
+        url: d.url,
+      })),
+    },
+    success: true,
+  };
+}
+
+export async function getImageDetails(
+  id: string,
+  callback: ResponseCallback<ImageDetailsInfo>,
+) {
+  try {
+    const params = new URLSearchParams({
+      'id': id,
+    }).toString();
+    const url = `${commonValue.ORIGIN}${PREFIX_URL}?${params}`;
+    const result = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        [commonValue.TOKEN_HEADER]: commonValue.ACCESS_TOKEN,
+      },
+      credentials: 'include',
+    }).then((res) => res.json());
+
+    callback(imageDetailsDataAdaptor(result));
+  } catch {
+    callback({ data: null, errorMessage: '이미지 세부 정보 로드 실패', success: false });
+  }
+}
+
+function imageDetailsDataAdaptor(
+  res: ImageDetailsResponse,
+): Response<ImageDetailsInfo> {
+  return {
+    data: {
+      imageDetails: {
+        id: res.id,
+        title: res.title,
+        content: res.content,
+        url: res.imageUrl,
+        userId: res.userId,
+        userName: res.userName,
+        userEmail: res.userEmail,
+        replies: res.imageReplies.map((reply) => ({
+          id: reply.replyId,
+          content: reply.replyContent,
+          userId: reply.userId,
+          userName: reply.userName,
         })),
+        moreImages: {
+          images: res.moreImages.map((image) => ({
+            id: image.id,
+            url: image.url,
+          })),
+        },
+      },
     },
     success: true,
   };
@@ -87,27 +172,30 @@ export async function uploadImage(
       headers: {
         [commonValue.TOKEN_HEADER]: commonValue.ACCESS_TOKEN,
       },
-      credentials: "include",
+      credentials: 'include',
     }).then((res) => {
       console.log(res);
       if (res.status !== 201) throw new Error();
-      return res.json()
+      return res.json();
     });
 
     return callback(imageFileDataAdaptor(result));
   } catch {
-    callback({ data: null, errorMessage: '이미지 업로드 실패', success: false });
+    callback({
+      data: null,
+      errorMessage: '이미지 업로드 실패',
+      success: false,
+    });
   }
 }
 
 function imageFileDataAdaptor(res: FileInfoResponse): Response<FileInfo> {
   return {
     data: {
-      fileMetaData:
-        {
-          key: res.key,
-          url: res.url,
-        },
+      fileMetaData: {
+        key: res.key,
+        url: res.url,
+      },
     },
     success: true,
   };
@@ -131,11 +219,15 @@ export async function createImagePin(
         'Content-Type': 'application/json',
         [commonValue.TOKEN_HEADER]: commonValue.ACCESS_TOKEN,
       },
-      credentials: "include",
+      credentials: 'include',
     }).then((res) => res.json());
 
     return callback({ data: result, success: true });
   } catch {
-    callback({ data: null, errorMessage: '이미지 pin 생성 실패', success: false });
+    callback({
+      data: null,
+      errorMessage: '이미지 pin 생성 실패',
+      success: false,
+    });
   }
 }

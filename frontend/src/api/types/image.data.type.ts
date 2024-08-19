@@ -28,3 +28,24 @@ export interface CreateImagePinInfo {
   url: string;
   categoryIds: number[];
 }
+
+export interface ImageDetailsInfo {
+  imageDetails: {
+    id: number;
+    title: string;
+    content: string;
+    url: string;
+    userId: number;
+    userName: string;
+    userEmail: string;
+    replies: ImageReplyInfo[];
+    moreImages: ImagePins;
+  };
+}
+
+export interface ImageReplyInfo {
+  id: number;
+  content: string;
+  userId: number;
+  userName: string;
+}

@@ -21,7 +21,7 @@ export class ImageReply {
   @JoinColumn({ name: 'image_meta_id' })
   image: Image;
 
-  @ManyToOne(() => User, { lazy: true, onDelete: 'CASCADE' })
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
 

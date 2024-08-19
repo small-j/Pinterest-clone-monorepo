@@ -11,6 +11,7 @@ import { UserImageHistoryModule } from 'src/user-image-history/user-image-histor
 import { SaveImageHelperModule } from 'src/save-image-helper/save-image-helper.module';
 import { StorageModule } from 'src/storage/storage.module';
 import { RoleModule } from 'src/common/auth/role.module';
+import { ImageReplyHelperModule } from 'src/image-reply-helper/image-reply-helper.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { RoleModule } from 'src/common/auth/role.module';
     UserModule,
     UserImageHistoryModule,
     SaveImageHelperModule,
+    ImageReplyHelperModule,
     StorageModule,
     RoleModule,
   ],

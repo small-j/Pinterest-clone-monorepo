@@ -11,10 +11,10 @@ export class ImageRepository extends Repository<Image> {
     super(Image, dataSource.createEntityManager());
   }
 
-  async findImageWithUserWithImageReplyWithImageCategory(id: number): Promise<Image> {
+  async findImageWithUserWithImageCategory(id: number): Promise<Image> {
     return await this.findOne({
       where: { id },
-      relations: ['user', 'imageReplies', 'imageCategories'],
+      relations: ['user', 'imageCategories'],
     });
   }
 

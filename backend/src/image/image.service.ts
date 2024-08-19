@@ -23,6 +23,7 @@ import { UserImageHistoryRepository } from 'src/user-image-history/user-image-hi
 import { UserImageHistory } from 'src/user-image-history/entities/user-image-history.entity';
 import { DeleteSaveImageToImageHelperRepository } from 'src/save-image-helper/save-image-helper.repository';
 import { CustomStorageManager } from 'src/storage/storage-manager.interface';
+import { FindImageRepliesWithUserByImageHelperRepository } from 'src/image-reply-helper/image-reply-helper.repository';
 
 @Injectable()
 export class ImageService {
@@ -39,6 +40,8 @@ export class ImageService {
     private readonly userRepository: UserRepository,
     @InjectRepository(UserImageHistoryRepository)
     private readonly userImageHistoryRepository: UserImageHistoryRepository,
+    @InjectRepository(FindImageRepliesWithUserByImageHelperRepository)
+    private readonly imageReplyRepository: FindImageRepliesWithUserByImageHelperRepository,
     @Inject('CustomStorageManager')
     private readonly storageManager: CustomStorageManager,
   ) {}
@@ -107,12 +110,13 @@ export class ImageService {
 
   async findImage(id: number, user: User): Promise<GetImageDetailDto> {
     const image =
-      await this.imageRepository.findImageWithUserWithImageReplyWithImageCategory(
-        id,
-      );
+      await this.imageRepository.findImageWithUserWithImageCategory(id);
     this.validateImage(image);
 
-    const imageReplyResponses = image.imageReplies.map((imageReply) => {
+    const imageReplies =
+      await this.imageReplyRepository.findByImageWithUser(image);
+
+    const imageReplyResponses = imageReplies.map((imageReply) => {
       return GetImageReplyDto.of(imageReply);
     });
 

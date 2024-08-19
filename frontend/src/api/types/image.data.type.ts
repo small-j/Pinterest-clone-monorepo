@@ -2,6 +2,8 @@
     프론트에서 사용할 형태의 데이터 타입을 지정.
 */
 
+import { ImageReplyInfo } from "./reply.data.type";
+
 export interface ImagePin {
   id: number;
   url: string;
@@ -41,11 +43,4 @@ export interface ImageDetailsInfo {
     replies: ImageReplyInfo[];
     moreImages: ImagePins;
   };
-}
-
-export interface ImageReplyInfo {
-  id: number;
-  content: string;
-  userId: number;
-  userName: string;
 }

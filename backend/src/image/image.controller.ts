@@ -50,9 +50,9 @@ export class ImageController {
   @Get()
   async findImage(
     @Query('id') id: number,
-    @Query('user_id') userId: number = -1,
+    @AuthUser() user: User,
   ): Promise<GetImageDetailDto> {
-    return await this.imageService.findImage(id, userId);
+    return await this.imageService.findImage(id, user);
   }
 
   @Get('/search')

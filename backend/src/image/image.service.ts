@@ -105,7 +105,7 @@ export class ImageService {
     return imageId;
   }
 
-  async findImage(id: number, userId: number): Promise<GetImageDetailDto> {
+  async findImage(id: number, user: User): Promise<GetImageDetailDto> {
     const image =
       await this.imageRepository.findImageWithImageReplyWithImageCategory(id);
     this.validateImage(image);
@@ -127,9 +127,7 @@ export class ImageService {
         id,
       );
 
-    if (userId !== -1) {
-      await this.addUserImageHistory(image, userId);
-    }
+    await this.addUserImageHistory(image, user.id);
 
     return GetImageDetailDto.of(image, imageReplyResponses, moreImages);
   }

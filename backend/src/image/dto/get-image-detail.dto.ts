@@ -34,7 +34,6 @@ export class GetImageDetailDto {
     this.userEmail = userEmail;
     this.imageReplies = imageReplies;
     this.moreImages = moreImages;
-    console.log(this.userName);
   }
 
   static of(

@@ -174,7 +174,6 @@ export async function uploadImage(
       },
       credentials: 'include',
     }).then((res) => {
-      console.log(res);
       if (res.status !== 201) throw new Error();
       return res.json();
     });

@@ -35,9 +35,10 @@ export class ImageController {
 
   @Post('/meta')
   async addImage(
+    @AuthUser() user: User,
     @Body() imageMetaRequest: CreateMetaImageDto,
-  ): Promise<number> {
-    return await this.imageService.addImage(imageMetaRequest);
+  ): Promise<GetImageDto> {
+    return await this.imageService.addImage(user, imageMetaRequest);
   }
 
   @Delete()

@@ -40,7 +40,7 @@ function App() {
             }
           ></Route>
           <Route
-            path="/image-pin-detail"
+            path="/image-pin-detail/:id"
             element={
               <Layout>
                 <ImagePinDetailPage />

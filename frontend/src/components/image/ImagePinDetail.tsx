@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from '../shadcn/ui/dropdown-menu';
 import { CiMenuKebab } from 'react-icons/ci';
+import { createSaveImage } from '../../api/saveimage.api';
 
 interface Props {
   id: number;
@@ -43,10 +44,10 @@ function ImagePinDetail({
   const { register, handleSubmit } = useForm();
   const [repliesState, setRepliesState] = useState<ImageReplyInfo[]>(replies);
   const { user } = useContext(UserContext) as UserContextValue;
+  const [isSaved, setIsSaved] = useState(false);
 
   const addReply = (data: FieldValues) => {
     createImageReply({ content: data.reply, imageId: id }, (res) => {
-      console.log(id);
       if (!res || !res.success) return; // todo: reply 생성 실패했다는 toast? alert? 띄우기.
       const newReply = res.data as ImageReplyInfo;
       setRepliesState([newReply, ...repliesState]);
@@ -75,6 +76,20 @@ function ImagePinDetail({
     });
   };
 
+  const requesToCreateSaveImage = () => {
+    createSaveImage(id, (res) => {
+      if (!res || !res.success) {
+        // todo 댓글 삭제 실패 안내문 alert 띄우기.
+        return;
+      }
+      else if (res.success) setIsSaved(true);
+    });
+  }
+
+  const requesToDeleteSaveImage = () => {
+
+  }
+
   return (
     <Card className="flex w-[1016px] max-h-[1087px] mt-3 mb-3 relative">
       <div className="w-2/4 min-h-[472.5px] max-h-full">
@@ -83,7 +98,7 @@ function ImagePinDetail({
       <div className="w-2/4 h-full grow flex">
         <Card className="border-none shadow-none w-full h-full flex flex-col">
           <CardHeader className="flex flex-row justify-between items-center pb-0 sticky top-0 bg-white">
-            {checkUserAthorization() && (
+            {checkUserAthorization() ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="rotate-90 w-8 h-8 flex items-center justify-center">
@@ -96,8 +111,11 @@ function ImagePinDetail({
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            )}
-            <Button className="m-0">저장</Button>
+            ) : <div></div>}
+            {!isSaved ? 
+            <Button className="m-0 bg-[#e60023]" onClick={requesToCreateSaveImage}>저장</Button> :
+            <Button className="m-0" onClick={requesToDeleteSaveImage}>저장됨</Button>
+}
           </CardHeader>
           <CardContent className="mt-8 grow">
             <h1 className="text-[28px] font-semibold">{title}</h1>

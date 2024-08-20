@@ -41,12 +41,13 @@ export class ImageReplyService {
     return GetImageReplyDto.of(imageReply, user);
   }
 
-  async deleteReply(id: number): Promise<number> {
+  async deleteReply(id: number, user: User): Promise<GetImageReplyDto> {
     const imageReply = await this.imageReplyRepository.findOneBy({ id: id });
     this.isExistReply(imageReply);
 
+    const reply = GetImageReplyDto.of(imageReply, user);
     await this.imageReplyRepository.remove(imageReply);
-    return id;
+    return reply;
   }
 
   private isExistReply(imageReply: ImageReply) {

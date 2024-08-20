@@ -27,7 +27,10 @@ export class ImageReplyController {
 
   @Delete()
   @UseGuards(RolesGuard)
-  async deleteReply(@Query('id') id: number): Promise<number> {
-    return await this.imageReplyService.deleteReply(id);
+  async deleteReply(
+    @Query('id') id: number,
+    @AuthUser() user: User,
+  ): Promise<GetImageReplyDto> {
+    return await this.imageReplyService.deleteReply(id, user);
   }
 }

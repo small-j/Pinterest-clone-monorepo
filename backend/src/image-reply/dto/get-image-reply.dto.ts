@@ -2,18 +2,13 @@ import { User } from 'src/user/entities/user.entity';
 import { ImageReply } from '../entities/image-reply.entity';
 
 export class GetImageReplyDto {
-  imageMetaId: number;
+  id: number;
   content: string;
   userId: number;
   userName: string;
 
-  constructor(
-    imageMetaId: number,
-    content: string,
-    userId: number,
-    userName: string,
-  ) {
-    this.imageMetaId = imageMetaId;
+  constructor(id: number, content: string, userId: number, userName: string) {
+    this.id = id;
     this.content = content;
     this.userId = userId;
     this.userName = !userName ? '' : userName;

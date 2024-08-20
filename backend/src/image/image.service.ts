@@ -92,9 +92,10 @@ export class ImageService {
     return new GetImageDto(image.id, image.url);
   }
 
-  async deleteImage(imageId: number): Promise<number> {
+  async deleteImage(imageId: number): Promise<GetImageDto> {
     const image = await this.imageRepository.findOneBy({ id: imageId });
     this.validateImage(image);
+    const response = new GetImageDto(image.id, image.url);
 
     await this.deleteS3Image(image);
     await this.deleteSaveImageToImageHelperRepository.deleteSaveImageToImage(
@@ -105,7 +106,7 @@ export class ImageService {
     );
     await this.imageRepository.remove(image);
 
-    return imageId;
+    return response;
   }
 
   async findImage(id: number, user: User): Promise<GetImageDetailDto> {

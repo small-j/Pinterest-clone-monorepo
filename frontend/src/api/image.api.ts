@@ -230,3 +230,31 @@ export async function createImagePin(
     });
   }
 }
+
+export async function deleteImagePin(
+  id: string,
+  callback: (data: Response<ImagePin> | ErrorResponse) => void,
+) {
+  try {
+    const params = new URLSearchParams({
+      'id': id,
+    }).toString();
+    const url = `${commonValue.ORIGIN}${PREFIX_URL}?${params}`;
+    const result = await fetch(url, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        [commonValue.TOKEN_HEADER]: commonValue.ACCESS_TOKEN,
+      },
+      credentials: 'include',
+    }).then((res) => res.json());
+
+    return callback({ data: result, success: true });
+  } catch {
+    callback({
+      data: null,
+      errorMessage: '이미지 pin 삭제 실패',
+      success: false,
+    });
+  }
+}

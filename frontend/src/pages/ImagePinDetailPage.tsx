@@ -5,6 +5,7 @@ import { deleteImagePin, getImageDetails } from '../api/image.api';
 import { ErrorResponse, Response } from '../api/types/common.data.type';
 import { ImageDetailsInfo } from '../api/types/image.data.type';
 import Loading from '../components/common/Loading';
+import { getSaveImage } from '../api/saveimage.api';
 
 function ImagePinDetailPage() {
   const param = useParams();
@@ -13,6 +14,7 @@ function ImagePinDetailPage() {
     Response<ImageDetailsInfo> | ErrorResponse
   >();
   const [loading, setLoading] = useState<boolean>(false);
+  const [isSaved, setIsSaved] = useState(false);
 
   const isErrorResponse = (
     response: Response<ImageDetailsInfo> | ErrorResponse | undefined,
@@ -23,7 +25,12 @@ function ImagePinDetailPage() {
   useEffect(() => {
     checkParamValidation();
     getImageDeatilsData();
+    getSaveImageData();
   }, [param.id]);
+
+  const setIsSavedState = (state: boolean) => {
+    setIsSaved(state);
+  };
 
   const checkParamValidation = () => {
     if (!param.id) navigate('/');
@@ -34,6 +41,14 @@ function ImagePinDetailPage() {
     if (!param.id) return;
     getImageDetails(param.id, (res) => {
       setImageDetails(res);
+    });
+  };
+
+  const getSaveImageData = () => {
+    if (!param.id) return;
+    getSaveImage(param.id, (res) => {
+      if (!res || !res.success) return;
+      else setIsSaved(true);
     });
   };
 
@@ -58,6 +73,8 @@ function ImagePinDetailPage() {
         <ImagePinDetail
           {...imageDetails.data.imageDetails}
           deleteImagePinRequest={deleteImagePinRequest}
+          isSaved={isSaved}
+          setIsSaved={setIsSavedState}
         ></ImagePinDetail>
       )}
     </div>

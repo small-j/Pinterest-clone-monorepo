@@ -28,6 +28,8 @@ interface Props {
   userEmail: string;
   replies: ImageReplyInfo[];
   deleteImagePinRequest: (id: number) => void;
+  isSaved: boolean;
+  setIsSaved: (state: boolean) => void;
 }
 
 function ImagePinDetail({
@@ -40,11 +42,12 @@ function ImagePinDetail({
   userEmail,
   replies,
   deleteImagePinRequest,
+  isSaved,
+  setIsSaved,
 }: Props) {
   const { register, handleSubmit } = useForm();
   const [repliesState, setRepliesState] = useState<ImageReplyInfo[]>(replies);
   const { user } = useContext(UserContext) as UserContextValue;
-  const [isSaved, setIsSaved] = useState(false);
 
   const addReply = (data: FieldValues) => {
     createImageReply({ content: data.reply, imageId: id }, (res) => {
@@ -81,14 +84,11 @@ function ImagePinDetail({
       if (!res || !res.success) {
         // todo 댓글 삭제 실패 안내문 alert 띄우기.
         return;
-      }
-      else if (res.success) setIsSaved(true);
+      } else if (res.success) setIsSaved(true);
     });
-  }
+  };
 
-  const requesToDeleteSaveImage = () => {
-
-  }
+  const requesToDeleteSaveImage = () => {};
 
   return (
     <Card className="flex w-[1016px] max-h-[1087px] mt-3 mb-3 relative">
@@ -111,11 +111,18 @@ function ImagePinDetail({
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            ) : <div></div>}
-            {!isSaved ? 
-            <Button className="m-0 bg-[#e60023]" onClick={requesToCreateSaveImage}>저장</Button> :
-            <Button className="m-0" onClick={requesToDeleteSaveImage}>저장됨</Button>
-}
+            ) : (
+              <div></div>
+            )}
+            {!isSaved ? (
+              <Button className="m-0 bg-[#e60023]" onClick={requesToCreateSaveImage}>
+                저장
+              </Button>
+            ) : (
+              <Button className="m-0" onClick={requesToDeleteSaveImage}>
+                저장됨
+              </Button>
+            )}
           </CardHeader>
           <CardContent className="mt-8 grow">
             <h1 className="text-[28px] font-semibold">{title}</h1>

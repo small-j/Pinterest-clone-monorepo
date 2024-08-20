@@ -12,6 +12,7 @@ import { ImageRepository } from 'src/image/image.repository';
 import { ErrorMessage } from 'src/common/enum/error-message';
 import { CreateSaveImageDto } from './dto/create-save-image.dto';
 import { UserRepository } from 'src/user/user.repository';
+import { GetSaveImageDto } from './dto/get-save-image.dto';
 
 @Injectable()
 export class SaveImageService {
@@ -24,10 +25,10 @@ export class SaveImageService {
     private readonly saveImageRepository: SaveImageRepository,
   ) {}
 
-  async addSaveImage(saveImageRequest: CreateSaveImageDto): Promise<number> {
-    const user = await this.userRepository.findOne({
-      where: { id: saveImageRequest.userId },
-    });
+  async addSaveImage(
+    saveImageRequest: CreateSaveImageDto,
+    user: User,
+  ): Promise<GetSaveImageDto> {
     const image = await this.imageRepository.findOne({
       where: { id: saveImageRequest.imageMetaId },
     });
@@ -43,7 +44,7 @@ export class SaveImageService {
       throw new BadRequestException(ErrorMessage.DUPLICATE_SAVE_IMAGE);
     }
 
-    return saveImage.id;
+    return new GetSaveImageDto(saveImage.id, image.id, user.id);
   }
 
   async deleteSaveImage(saveImageId: number): Promise<number> {

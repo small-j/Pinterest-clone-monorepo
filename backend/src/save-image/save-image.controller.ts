@@ -9,6 +9,9 @@ import {
 import { SaveImageService } from './save-image.service';
 import { CreateSaveImageDto } from './dto/create-save-image.dto';
 import { RolesGuard } from 'src/guard/roles-guard';
+import { GetSaveImageDto } from './dto/get-save-image.dto';
+import { AuthUser } from 'src/decorator/auth-user.decorator';
+import { User } from 'src/user/entities/user.entity';
 
 @Controller('save-image')
 export class SaveImageController {
@@ -16,9 +19,10 @@ export class SaveImageController {
 
   @Post()
   async addSaveImage(
+    @AuthUser() user: User,
     @Body() saveImageRequest: CreateSaveImageDto,
-  ): Promise<number> {
-    return await this.saveImageService.addSaveImage(saveImageRequest);
+  ): Promise<GetSaveImageDto> {
+    return await this.saveImageService.addSaveImage(saveImageRequest, user);
   }
 
   @Delete()

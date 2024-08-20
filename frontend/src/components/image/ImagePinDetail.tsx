@@ -4,7 +4,7 @@ import { Button } from '../shadcn/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '../shadcn/ui/card';
 import { Input } from '../shadcn/ui/input';
 import RepliesArccordion from './RepliesArccordion';
-import { createImageReply } from '../../api/reply.api';
+import { createImageReply, deleteImageReply } from '../../api/reply.api';
 import { useContext, useState } from 'react';
 import { ImageReplyInfo } from '../../api/types/reply.data.type';
 import { HiPaperAirplane } from 'react-icons/hi';
@@ -46,6 +46,7 @@ function ImagePinDetail({
 
   const addReply = (data: FieldValues) => {
     createImageReply({ content: data.reply, imageId: id }, (res) => {
+      console.log(id);
       if (!res || !res.success) return; // todo: reply 생성 실패했다는 toast? alert? 띄우기.
       const newReply = res.data as ImageReplyInfo;
       setRepliesState([newReply, ...repliesState]);
@@ -59,10 +60,19 @@ function ImagePinDetail({
   const handleDelete = () => {
     if (!checkUserAthorization()) return;
     deleteImagePinRequest(id);
-  }
+  };
 
   const deleteReplyInState = (id: number) => {
     setRepliesState([...repliesState.filter((reply) => reply.id !== id)]);
+  };
+
+  const deleteImageReplyRequest = (id: number) => {
+    deleteImageReply(id.toString(), (res) => {
+      if (!res || !res.success) {
+        // todo 댓글 삭제 실패 안내문 alert 띄우기.
+        return;
+      } else if (res.success) deleteReplyInState(id);
+    });
   };
 
   return (
@@ -95,7 +105,7 @@ function ImagePinDetail({
             <Profile name={userName} email={userEmail}></Profile>
             <RepliesArccordion
               replies={repliesState}
-              deleteReplyInState={deleteReplyInState}
+              deleteReplyHandler={deleteImageReplyRequest}
             ></RepliesArccordion>
           </CardContent>
           <CardFooter className="sticky bottom-0 bg-white">

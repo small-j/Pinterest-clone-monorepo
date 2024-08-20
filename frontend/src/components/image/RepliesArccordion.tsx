@@ -9,11 +9,12 @@ import Reply from './Reply';
 
 interface Props {
   replies: ImageReplyInfo[];
+  deleteReplyHandler: (id: number) => void;
 }
 
-function RepliesArccordion({ replies }: Props) {
+function RepliesArccordion({ replies, deleteReplyHandler }: Props) {
   return (
-    <Accordion type="single" collapsible className='mt-4'>
+    <Accordion type="single" collapsible className="mt-4">
       <AccordionItem value="item-1">
         <AccordionTrigger>댓글 {replies.length}개</AccordionTrigger>
         <AccordionContent>
@@ -23,6 +24,8 @@ function RepliesArccordion({ replies }: Props) {
               id={reply.id}
               content={reply.content}
               userName={reply.userName}
+              userId={reply.userId}
+              deleteReplyHandler={deleteReplyHandler}
             ></Reply>
           ))}
         </AccordionContent>

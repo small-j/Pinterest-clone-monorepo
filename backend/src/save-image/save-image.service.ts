@@ -47,20 +47,27 @@ export class SaveImageService {
     return new GetSaveImageDto(saveImage.id, image.id, user.id);
   }
 
-  async deleteSaveImage(saveImageId: number): Promise<number> {
-    const saveImage = await this.isExistSaveImage(saveImageId);
+  async deleteSaveImage(id: number): Promise<number> {
+    const saveImage = await this.saveImageRepository.findOneBy({ id });
+    this.validateSaveImage(saveImage);
     await this.saveImageRepository.remove(saveImage);
-    return saveImageId;
+    return id;
   }
 
-  private async isExistSaveImage(saveImageId: number): Promise<SaveImage> {
-    const saveImage = await this.saveImageRepository.findOne({
-      where: {
-        id: saveImageId,
-      },
+  async getSaveImage(imageId: number, user: User): Promise<GetSaveImageDto> {
+    const image = await this.imageRepository.findOne({
+      where: { id: imageId },
     });
+    this.validateUser(user);
+    this.validateImage(image);
+
+    const saveImage = await this.saveImageRepository.findByImageAndUser(
+      image,
+      user,
+    );
     this.validateSaveImage(saveImage);
-    return saveImage;
+
+    return new GetSaveImageDto(saveImage.id, imageId, user.id);
   }
 
   private validateSaveImage(saveImage: SaveImage) {

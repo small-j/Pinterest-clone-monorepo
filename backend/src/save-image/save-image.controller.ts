@@ -5,6 +5,7 @@ import {
   Body,
   Query,
   UseGuards,
+  Get,
 } from '@nestjs/common';
 import { SaveImageService } from './save-image.service';
 import { CreateSaveImageDto } from './dto/create-save-image.dto';
@@ -29,5 +30,13 @@ export class SaveImageController {
   @UseGuards(RolesGuard)
   async deleteSaveImage(@Query('id') id: number): Promise<number> {
     return await this.saveImageService.deleteSaveImage(id);
+  }
+
+  @Get()
+  async getSaveImage(
+    @AuthUser() user: User,
+    @Query('imageId') imageId: number,
+  ): Promise<GetSaveImageDto> {
+    return await this.saveImageService.getSaveImage(imageId, user);
   }
 }

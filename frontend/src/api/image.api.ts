@@ -32,7 +32,7 @@ type ImageReplyResponse = {
   replyId: number;
   replyContent: string;
   userId: number;
-  userName: string;
+  userName?: string;
 };
 type MoreImageResponse = { id: number; url: string }[];
 
@@ -145,7 +145,7 @@ function imageDetailsDataAdaptor(
           id: reply.replyId,
           content: reply.replyContent,
           userId: reply.userId,
-          userName: reply.userName,
+          userName: !reply.userName ? '' : reply.userName,
         })),
         moreImages: {
           images: res.moreImages.map((image) => ({

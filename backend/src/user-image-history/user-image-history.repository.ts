@@ -22,10 +22,6 @@ export class UserImageHistoryRepository extends Repository<UserImageHistory> {
   }
 
   async removeUserImageHistoryFromImage(image: Image): Promise<void> {
-    await this.createQueryBuilder()
-      .delete()
-      .from(Image)
-      .where('id = :id', { id: image.id })
-      .execute();
+    await this.delete({ image });
   }
 }

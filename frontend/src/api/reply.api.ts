@@ -19,7 +19,7 @@ export async function createImageReply(
     const result = await fetch(`${commonValue.ORIGIN}${PREFIX_URL}`, {
       method: 'POST',
       body: JSON.stringify({
-        imageId: replyInfo.imageId,
+        imageMetaId: replyInfo.imageId,
         content: replyInfo.content,
       }),
       headers: {
@@ -51,4 +51,32 @@ function imageReplyDataAdaptor(
     },
     success: true,
   };
+}
+
+export async function deleteImageReply(
+  id: string,
+  callback: (data: Response<ImageReplyInfo> | ErrorResponse) => void,
+) {
+  try {
+    const params = new URLSearchParams({
+      'id': id,
+    }).toString();
+    const url = `${commonValue.ORIGIN}${PREFIX_URL}?${params}`;
+    const result = await fetch(url, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        [commonValue.TOKEN_HEADER]: commonValue.ACCESS_TOKEN,
+      },
+      credentials: 'include',
+    }).then((res) => res.json());
+
+    return callback({ data: result, success: true });
+  } catch {
+    callback({
+      data: null,
+      errorMessage: '댓글 삭제 실패',
+      success: false,
+    });
+  }
 }

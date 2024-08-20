@@ -10,6 +10,36 @@ type SaveImageInfoResponse = {
   userId: number;
 };
 
+export async function getSaveImage(
+  id: string,
+  callback: (data: Response<SaveImageInfo> | ErrorResponse) => void,
+) {
+  const params = new URLSearchParams({
+    imageId: id.toString(),
+  }).toString();
+  const url = `${commonValue.ORIGIN}${PREFIX_URL}?${params}`;
+  try {
+    const result = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        [commonValue.TOKEN_HEADER]: commonValue.ACCESS_TOKEN,
+      },
+      credentials: 'include',
+    }).then((res) => {
+      if (!res.ok) throw new Error();
+      return res.json();
+    });
+
+    callback(saveImageDataAdaptor(result));
+  } catch {
+    callback({
+      data: null,
+      errorMessage: '이미지 pin 저장 정보 로드 실패',
+      success: false,
+    });
+  }
+}
+
 export async function createSaveImage(
   imageId: number,
   callback: (data: Response<SaveImageInfo> | ErrorResponse) => void,

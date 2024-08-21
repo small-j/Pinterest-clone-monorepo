@@ -74,4 +74,3 @@ export default {
   },
   plugins: [tailwindcssAnimate], // TODO: 삭제 여부 알아보기.
 }
-  // } satisfies Config;

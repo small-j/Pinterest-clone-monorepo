@@ -2,7 +2,7 @@ import { FieldValues, useForm } from 'react-hook-form';
 import { Label } from '../shadcn/ui/label';
 import { Input } from '../shadcn/ui/input';
 import { Button } from '../shadcn/ui/button';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ErrorResponse, Response } from '@/src/api/types/common.data.type';
 import { login } from '../../api/auth.api';
 import { useContext, useState } from 'react';
@@ -28,6 +28,8 @@ function LoginForm() {
   const navigate = useNavigate();
   const [isFailed, setIsFailed] = useState(false);
   const context = useContext(UserContext);
+  const location = useLocation();
+  
 
   const validateWithAjv = (data: FieldValues) => {
     const validate = commonValue.AJV.compile(loginSchema);
@@ -46,6 +48,12 @@ function LoginForm() {
     }
     return true;
   };
+  
+  const getRedirectPath = () => {
+    let arr = location.search.split('&');
+    arr = arr.filter(param => param.includes('redirect'));
+    return arr[0].split('=')[1];
+  }
 
   const requestLogin = (data: FieldValues) => {
     if (!validateWithAjv(data)) return;
@@ -54,8 +62,8 @@ function LoginForm() {
       { email: data.email, password: data.password },
       (res: Response<LoginUserInfo> | ErrorResponse) => {
         if (res?.success && res.data && context) {
-          navigate('/');
           context.login(res.data);
+          navigate(getRedirectPath());
         }
         else setIsFailed(true);
       },

@@ -17,6 +17,7 @@ interface JoinInfo {
 
 interface LoginResponse {
   id: number;
+  name: string;
   email: string;
 }
 
@@ -54,6 +55,7 @@ function LoginResponseAdaptor(res: LoginResponse, token: string): Response<Login
     data: {
       token: token,
       id: res.id,
+      name: res.name,
       email: res.email,
     },
     success: true,

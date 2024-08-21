@@ -110,7 +110,7 @@ function ImagePinDetailPage() {
           deleteSaveImage={requesToDeleteSaveImage}
         ></ImagePinDetail>
       )}
-      {imageDetails?.data?.imageDetails?.moreImages && (
+      {imageDetails?.data?.imageDetails?.moreImages && imageDetails.data.imageDetails.moreImages.images.length > 0 && (
         <>
           <h3 className='mt-3 mb-1 text-[20px] font-medium'>더 찾아보기</h3>
           <div className="flex flex-wrap justify-center">

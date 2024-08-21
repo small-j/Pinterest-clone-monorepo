@@ -12,12 +12,22 @@ function HomePage() {
   useEffect(() => {
     getMainImages((res) => {
       setImageDatas(res);
-    })
+    });
   }, []);
 
+  const isErrorResponse = (
+    response: Response<ImagePins> | ErrorResponse | undefined,
+  ): response is ErrorResponse => {
+    return !!response && response.success === false;
+  };
+
   return (
-    <div>
-      <ImagePinList imageDatas={imageDatas}></ImagePinList>
+    <div className="w-full flex flex-row flex-wrap justify-center">
+      {!imageDatas && <div>loading...</div>}
+      {isErrorResponse(imageDatas) && <div>{imageDatas.errorMessage}</div>}
+      {imageDatas && imageDatas.success && imageDatas.data && (
+        <ImagePinList imageDatas={imageDatas.data}></ImagePinList>
+      )}
     </div>
   );
 }

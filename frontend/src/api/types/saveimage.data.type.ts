@@ -3,3 +3,7 @@ export interface SaveImageInfo {
     imageId: number;
     userId: number;
 }
+
+export interface SaveImageDeleteInfo {
+    id: number;
+}

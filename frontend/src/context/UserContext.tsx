@@ -8,6 +8,7 @@ interface Props {
 
 export interface User {
   id: number;
+  name: string;
   email: string;
 }
 
@@ -23,12 +24,13 @@ export function UserProvider({ children }: Props) {
   const [user, setUser] = useState<User | null>(null);
 
   const login = (userData: LoginUserInfo) => {
-    setUser({ id: userData.id, email: userData.email });
+    setUser({ id: userData.id, name: userData.name, email: userData.email });
     commonValue.ACCESS_TOKEN = userData.token;
   };
   const logout = () => {
     setUser(null);
     commonValue.ACCESS_TOKEN = '';
+    window.location.reload();
   };
 
   return (

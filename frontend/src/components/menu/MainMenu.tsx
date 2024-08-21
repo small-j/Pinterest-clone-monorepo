@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Menubar, MenubarMenu, MenubarTrigger } from '../shadcn/ui/menubar';
 import SearchInput from './SearchInput';
 import { useEffect, useState } from 'react';
+import ProfileControl from '../common/ProfileControl';
 
 function MainMenu() {
   const location = useLocation();
@@ -46,7 +47,8 @@ function MainMenu() {
           >
             <div>만들기</div>
           </MenubarTrigger>
-          <SearchInput className="grow"></SearchInput>
+          <SearchInput className="grow mr-2"></SearchInput>
+          <ProfileControl></ProfileControl>
         </MenubarMenu>
       </Menubar>
     </div>

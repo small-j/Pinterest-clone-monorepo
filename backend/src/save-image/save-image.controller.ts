@@ -13,6 +13,7 @@ import { RolesGuard } from 'src/guard/roles-guard';
 import { GetSaveImageDto } from './dto/get-save-image.dto';
 import { AuthUser } from 'src/decorator/auth-user.decorator';
 import { User } from 'src/user/entities/user.entity';
+import { GetSaveImageIdDto } from './dto/get-save-image-id.dto';
 
 @Controller('save-image')
 export class SaveImageController {
@@ -28,7 +29,7 @@ export class SaveImageController {
 
   @Delete()
   @UseGuards(RolesGuard)
-  async deleteSaveImage(@Query('id') id: number): Promise<number> {
+  async deleteSaveImage(@Query('id') id: number): Promise<GetSaveImageIdDto> {
     return await this.saveImageService.deleteSaveImage(id);
   }
 

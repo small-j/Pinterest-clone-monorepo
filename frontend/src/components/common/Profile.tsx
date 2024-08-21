@@ -1,11 +1,13 @@
 interface Props {
   name: string;
   email: string;
+  marginTop: string;
+  marginBottom: string;
 }
 
-function Profile({ name, email }: Props) {
+function Profile({ name, email, marginTop, marginBottom }: Props) {
   return (
-    <div className='mt-4 mb-8'>
+    <div className={`mt-${marginTop} mb-${marginBottom}`}>
       <div className="text-sm font-semibold">
         {name === '' ? 'Unknown' : name}
       </div>

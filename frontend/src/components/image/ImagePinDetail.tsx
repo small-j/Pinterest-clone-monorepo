@@ -117,7 +117,7 @@ function ImagePinDetail({
           <CardContent className="mt-8 grow">
             <h1 className="text-[28px] font-semibold">{title}</h1>
             <div className="text-base mt-4 mb-4">{content}</div>
-            <Profile name={userName} email={userEmail}></Profile>
+            <Profile name={userName} email={userEmail} marginTop='4' marginBottom='8'></Profile>
             <RepliesArccordion
               replies={repliesState}
               deleteReplyHandler={deleteImageReplyRequest}

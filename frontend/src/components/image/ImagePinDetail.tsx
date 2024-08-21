@@ -16,7 +16,6 @@ import {
   DropdownMenuTrigger,
 } from '../shadcn/ui/dropdown-menu';
 import { CiMenuKebab } from 'react-icons/ci';
-import { createSaveImage } from '../../api/saveimage.api';
 
 interface Props {
   id: number;
@@ -29,7 +28,8 @@ interface Props {
   replies: ImageReplyInfo[];
   deleteImagePinRequest: (id: number) => void;
   isSaved: boolean;
-  setIsSaved: (state: boolean) => void;
+  createSaveImage: (id: number) => void;
+  deleteSaveImage: () => void;
 }
 
 function ImagePinDetail({
@@ -43,7 +43,8 @@ function ImagePinDetail({
   replies,
   deleteImagePinRequest,
   isSaved,
-  setIsSaved,
+  createSaveImage,
+  deleteSaveImage,
 }: Props) {
   const { register, handleSubmit } = useForm();
   const [repliesState, setRepliesState] = useState<ImageReplyInfo[]>(replies);
@@ -79,17 +80,6 @@ function ImagePinDetail({
     });
   };
 
-  const requesToCreateSaveImage = () => {
-    createSaveImage(id, (res) => {
-      if (!res || !res.success) {
-        // todo 댓글 삭제 실패 안내문 alert 띄우기.
-        return;
-      } else if (res.success) setIsSaved(true);
-    });
-  };
-
-  const requesToDeleteSaveImage = () => {};
-
   return (
     <Card className="flex w-[1016px] max-h-[1087px] mt-3 mb-3 relative">
       <div className="w-2/4 min-h-[472.5px] max-h-full">
@@ -115,11 +105,11 @@ function ImagePinDetail({
               <div></div>
             )}
             {!isSaved ? (
-              <Button className="m-0 bg-[#e60023]" onClick={requesToCreateSaveImage}>
+              <Button className="m-0 bg-[#e60023]" onClick={() => createSaveImage(id)}>
                 저장
               </Button>
             ) : (
-              <Button className="m-0" onClick={requesToDeleteSaveImage}>
+              <Button className="m-0" onClick={() => deleteSaveImage()}>
                 저장됨
               </Button>
             )}

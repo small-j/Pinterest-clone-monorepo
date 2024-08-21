@@ -5,7 +5,8 @@ import { deleteImagePin, getImageDetails } from '../api/image.api';
 import { ErrorResponse, Response } from '../api/types/common.data.type';
 import { ImageDetailsInfo } from '../api/types/image.data.type';
 import Loading from '../components/common/Loading';
-import { getSaveImage } from '../api/saveimage.api';
+import { createSaveImage, deleteSaveImage, getSaveImage } from '../api/saveimage.api';
+import { SaveImageInfo } from '../api/types/saveimage.data.type';
 
 function ImagePinDetailPage() {
   const param = useParams();
@@ -15,6 +16,7 @@ function ImagePinDetailPage() {
   >();
   const [loading, setLoading] = useState<boolean>(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [saveImage, setSaveImage] = useState<SaveImageInfo | null>(null);
 
   const isErrorResponse = (
     response: Response<ImageDetailsInfo> | ErrorResponse | undefined,
@@ -27,10 +29,6 @@ function ImagePinDetailPage() {
     getImageDeatilsData();
     getSaveImageData();
   }, [param.id]);
-
-  const setIsSavedState = (state: boolean) => {
-    setIsSaved(state);
-  };
 
   const checkParamValidation = () => {
     if (!param.id) navigate('/');
@@ -48,7 +46,10 @@ function ImagePinDetailPage() {
     if (!param.id) return;
     getSaveImage(param.id, (res) => {
       if (!res || !res.success) return;
-      else setIsSaved(true);
+      else if (res.data) {
+        setIsSaved(true);
+        setSaveImage(res.data);
+      }
     });
   };
 
@@ -57,6 +58,32 @@ function ImagePinDetailPage() {
     deleteImagePin(id.toString(), (res) => {
       if (!res || !res.success) setLoading(false);
       else if (res.success) navigate('/');
+    });
+  };
+
+  const requesToCreateSaveImage = (id: number) => {
+    createSaveImage(id, (res) => {
+      if (!res || !res.success) {
+        // todo 댓글 삭제 실패 안내문 alert 띄우기.
+        return;
+      } else if (res.success) {
+        setIsSaved(true);
+        setSaveImage(res.data);
+      }
+    });
+  };
+
+  const requesToDeleteSaveImage = () => {
+    if (!saveImage) {
+      // todo save image 취소 실패 안내문 alert 띄우기. 뭔가 알 수 없는 문제가 생겼다고 알림.
+      return;
+    }
+    deleteSaveImage(saveImage.id, (res) => {
+      if (!res || !res.success) return;
+      else if (res.success && res.data) {
+        setIsSaved(false);
+        setSaveImage(null);
+      }
     });
   };
 
@@ -74,7 +101,8 @@ function ImagePinDetailPage() {
           {...imageDetails.data.imageDetails}
           deleteImagePinRequest={deleteImagePinRequest}
           isSaved={isSaved}
-          setIsSaved={setIsSavedState}
+          createSaveImage={requesToCreateSaveImage}
+          deleteSaveImage={requesToDeleteSaveImage}
         ></ImagePinDetail>
       )}
     </div>

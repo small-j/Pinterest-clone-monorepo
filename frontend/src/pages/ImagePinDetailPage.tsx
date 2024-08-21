@@ -5,8 +5,13 @@ import { deleteImagePin, getImageDetails } from '../api/image.api';
 import { ErrorResponse, Response } from '../api/types/common.data.type';
 import { ImageDetailsInfo } from '../api/types/image.data.type';
 import Loading from '../components/common/Loading';
-import { createSaveImage, deleteSaveImage, getSaveImage } from '../api/saveimage.api';
+import {
+  createSaveImage,
+  deleteSaveImage,
+  getSaveImage,
+} from '../api/saveimage.api';
 import { SaveImageInfo } from '../api/types/saveimage.data.type';
+import ImagePinList from '../components/image/ImagePinList';
 
 function ImagePinDetailPage() {
   const param = useParams();
@@ -104,6 +109,16 @@ function ImagePinDetailPage() {
           createSaveImage={requesToCreateSaveImage}
           deleteSaveImage={requesToDeleteSaveImage}
         ></ImagePinDetail>
+      )}
+      {imageDetails?.data?.imageDetails?.moreImages && (
+        <>
+          <h3 className='mt-3 mb-1 text-[20px] font-medium'>더 찾아보기</h3>
+          <div className="flex flex-wrap justify-center">
+            <ImagePinList
+              imageDatas={imageDetails.data.imageDetails.moreImages}
+            ></ImagePinList>
+          </div>
+        </>
       )}
     </div>
   );

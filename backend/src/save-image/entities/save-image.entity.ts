@@ -19,11 +19,11 @@ export class SaveImage {
   @Column(() => BaseTime)
   baseTime: BaseTime;
 
-  @ManyToOne(() => Image, { lazy: true })
+  @ManyToOne(() => Image)
   @JoinColumn({ name: 'image_meta_id' })
   image: Image;
 
-  @ManyToOne(() => User, (user) => user.saveImages, { lazy: true })
+  @ManyToOne(() => User, (user) => user.saveImages)
   @JoinColumn({ name: 'user_id' })
   user: User;
 

@@ -5,8 +5,10 @@ import { Button } from '../shadcn/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { ErrorResponse, Response } from '@/src/api/types/common.data.type';
 import { login } from '../../api/auth.api';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { commonValue } from '../../api/common.value';
+import { UserContext } from '../../context/UserContext';
+import { LoginUserInfo } from '@/src/api/types/auth.data.type';
 
 const loginSchema = {
   type: 'object',
@@ -25,6 +27,7 @@ function LoginForm() {
   } = useForm();
   const navigate = useNavigate();
   const [isFailed, setIsFailed] = useState(false);
+  const context = useContext(UserContext);
 
   const validateWithAjv = (data: FieldValues) => {
     const validate = commonValue.AJV.compile(loginSchema);
@@ -49,11 +52,15 @@ function LoginForm() {
 
     login(
       { email: data.email, password: data.password },
-      (res: Response<string> | ErrorResponse) => {
-        if (res?.success) navigate('/');
+      (res: Response<LoginUserInfo> | ErrorResponse) => {
+        if (res?.success && res.data && context) {
+          navigate('/');
+          context.login(res.data);
+        }
         else setIsFailed(true);
       },
     );
+
   };
 
   const toJoinPage = () => {

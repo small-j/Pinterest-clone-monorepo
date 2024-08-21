@@ -23,6 +23,7 @@ import { UserImageHistoryRepository } from 'src/user-image-history/user-image-hi
 import { UserImageHistory } from 'src/user-image-history/entities/user-image-history.entity';
 import { DeleteSaveImageToImageHelperRepository } from 'src/save-image-helper/save-image-helper.repository';
 import { CustomStorageManager } from 'src/storage/storage-manager.interface';
+import { FindImageRepliesWithUserByImageHelperRepository } from 'src/image-reply-helper/image-reply-helper.repository';
 
 @Injectable()
 export class ImageService {
@@ -39,6 +40,8 @@ export class ImageService {
     private readonly userRepository: UserRepository,
     @InjectRepository(UserImageHistoryRepository)
     private readonly userImageHistoryRepository: UserImageHistoryRepository,
+    @InjectRepository(FindImageRepliesWithUserByImageHelperRepository)
+    private readonly imageReplyRepository: FindImageRepliesWithUserByImageHelperRepository,
     @Inject('CustomStorageManager')
     private readonly storageManager: CustomStorageManager,
   ) {}
@@ -89,9 +92,10 @@ export class ImageService {
     return new GetImageDto(image.id, image.url);
   }
 
-  async deleteImage(imageId: number): Promise<number> {
+  async deleteImage(imageId: number): Promise<GetImageDto> {
     const image = await this.imageRepository.findOneBy({ id: imageId });
     this.validateImage(image);
+    const response = new GetImageDto(image.id, image.url);
 
     await this.deleteS3Image(image);
     await this.deleteSaveImageToImageHelperRepository.deleteSaveImageToImage(
@@ -102,15 +106,18 @@ export class ImageService {
     );
     await this.imageRepository.remove(image);
 
-    return imageId;
+    return response;
   }
 
-  async findImage(id: number, userId: number): Promise<GetImageDetailDto> {
+  async findImage(id: number, user: User): Promise<GetImageDetailDto> {
     const image =
-      await this.imageRepository.findImageWithImageReplyWithImageCategory(id);
+      await this.imageRepository.findImageWithUserWithImageCategory(id);
     this.validateImage(image);
 
-    const imageReplyResponses = image.imageReplies.map((imageReply) => {
+    const imageReplies =
+      await this.imageReplyRepository.findByImageWithUser(image);
+
+    const imageReplyResponses = imageReplies.map((imageReply) => {
       return GetImageReplyDto.of(imageReply);
     });
 
@@ -127,11 +134,14 @@ export class ImageService {
         id,
       );
 
-    if (userId !== -1) {
-      await this.addUserImageHistory(image, userId);
-    }
+    await this.addUserImageHistory(image, user.id);
 
-    return GetImageDetailDto.of(image, imageReplyResponses, moreImages);
+    return GetImageDetailDto.of(
+      image,
+      image.user,
+      imageReplyResponses,
+      moreImages,
+    );
   }
 
   async getMainImages(user: User): Promise<GetImageDto[]> {

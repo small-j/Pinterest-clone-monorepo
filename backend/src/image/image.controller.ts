@@ -43,16 +43,16 @@ export class ImageController {
 
   @Delete()
   @UseGuards(RolesGuard)
-  async deleteImage(@Query('id') id: number): Promise<number> {
+  async deleteImage(@Query('id') id: number): Promise<GetImageDto> {
     return await this.imageService.deleteImage(id);
   }
 
   @Get()
   async findImage(
     @Query('id') id: number,
-    @Query('user_id') userId: number = -1,
+    @AuthUser() user: User,
   ): Promise<GetImageDetailDto> {
-    return await this.imageService.findImage(id, userId);
+    return await this.imageService.findImage(id, user);
   }
 
   @Get('/search')

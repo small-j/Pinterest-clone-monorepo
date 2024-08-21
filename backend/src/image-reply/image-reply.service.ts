@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from 'src/user/user.repository';
 import { ImageRepository } from 'src/image/image.repository';
 import { CreateImageReplyDto } from './dto/create-image-reply.dto';
+import { GetImageReplyDto } from './dto/get-image-reply.dto';
 
 @Injectable()
 export class ImageReplyService {
@@ -20,10 +21,10 @@ export class ImageReplyService {
     private readonly imageRepository: ImageRepository,
   ) {}
 
-  async addReply(imageReplyRequest: CreateImageReplyDto): Promise<number> {
-    const user = await this.userRepository.findOneBy({
-      id: imageReplyRequest.userId,
-    });
+  async addReply(
+    user: User,
+    imageReplyRequest: CreateImageReplyDto,
+  ): Promise<GetImageReplyDto> {
     const image = await this.imageRepository.findOneBy({
       id: imageReplyRequest.imageMetaId,
     });
@@ -37,15 +38,16 @@ export class ImageReplyService {
     imageReply.user = user;
 
     await this.imageReplyRepository.save(imageReply);
-    return imageReply.id;
+    return GetImageReplyDto.of(imageReply, user);
   }
 
-  async deleteReply(id: number): Promise<number> {
+  async deleteReply(id: number, user: User): Promise<GetImageReplyDto> {
     const imageReply = await this.imageReplyRepository.findOneBy({ id: id });
     this.isExistReply(imageReply);
 
+    const reply = GetImageReplyDto.of(imageReply, user);
     await this.imageReplyRepository.remove(imageReply);
-    return id;
+    return reply;
   }
 
   private isExistReply(imageReply: ImageReply) {

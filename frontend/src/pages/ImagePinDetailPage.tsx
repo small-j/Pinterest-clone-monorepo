@@ -49,7 +49,7 @@ function ImagePinDetailPage() {
 
   const getSaveImageData = () => {
     if (!param.id) return;
-    getSaveImage(param.id, (res) => {
+    getSaveImage(Number.parseInt(param.id), (res) => {
       if (!res || !res.success) return;
       else if (res.data) {
         setIsSaved(true);

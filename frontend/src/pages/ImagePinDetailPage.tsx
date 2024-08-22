@@ -42,7 +42,7 @@ function ImagePinDetailPage() {
 
   const getImageDeatilsData = () => {
     if (!param.id) return;
-    getImageDetails(param.id, (res) => {
+    getImageDetails(Number.parseInt(param.id), (res) => {
       setImageDetails(res);
     });
   };
@@ -60,7 +60,7 @@ function ImagePinDetailPage() {
 
   const deleteImagePinRequest = (id: number) => {
     setLoading(true);
-    deleteImagePin(id.toString(), (res) => {
+    deleteImagePin(id, (res) => {
       if (!res || !res.success) setLoading(false);
       else if (res.success) navigate('/');
     });

@@ -13,9 +13,6 @@ function SearchPage() {
 
   useEffect(() => {
     requestSearchImages(param.searchWord || '');
-  }, []);
-  useEffect(() => {
-    requestSearchImages(param.searchWord || '');
   }, [param.searchWord]);
 
   const requestSearchImages = (searchWord: string) => {

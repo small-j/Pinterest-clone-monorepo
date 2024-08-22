@@ -7,6 +7,7 @@ import { ErrorResponse, Response } from '@/src/api/types/common.data.type';
 import { join } from '../../api/auth.api';
 import { JSONSchemaType } from 'ajv';
 import { commonValue } from '../../api/common.value';
+import { Card, CardContent, CardFooter, CardHeader } from '../shadcn/ui/card';
 
 interface JoinData {
   email: string;
@@ -70,38 +71,52 @@ function JoinForm() {
   };
 
   return (
-    <form
-      className="flex flex-col items-center w-full"
-      onSubmit={handleSubmit((data) => requestJoin(data))}
-    >
-      <h1 className="text-2xl">회원가입</h1>
-      <div className="control mt-1 w-full">
-        <Label>이름</Label>
-        <Input {...register('name', { required: true })} />
-        {errors.name && (
-          <p>{errors.name.message?.toString() || '이름은 필수입니다.'}</p>
-        )}
-      </div>
-      <div className="control mt-1 w-full">
-        <Label>이메일</Label>
-        <Input {...register('email', { required: true })} />
-        {errors.email && (
-          <p>{errors.email.message?.toString() || '이메일은 필수입니다.'}</p>
-        )}
-      </div>
-      <div className="control mt-1 w-full">
-        <Label>비밀번호</Label>
-        <Input type="password" {...register('password', { required: true })} />
-        {errors.password && (
-          <p>
-            {errors.password.message?.toString() || '비밀번호는 필수입니다.'}
-          </p>
-        )}
-      </div>
-      <Button className="mt-4 w-full" type="submit">
-        회원가입
-      </Button>
-    </form>
+    <Card>
+      <form
+        className="flex flex-col items-center w-full"
+        onSubmit={handleSubmit((data) => requestJoin(data))}
+      >
+        <CardHeader>
+          <h1 className="text-2xl">회원가입</h1>
+        </CardHeader>
+        <CardContent className='w-full'>
+          <div className="control mt-1 w-full">
+            <Label>이름</Label>
+            <Input {...register('name', { required: true })} />
+            {errors.name && (
+              <p>{errors.name.message?.toString() || '이름은 필수입니다.'}</p>
+            )}
+          </div>
+          <div className="control mt-1 w-full">
+            <Label>이메일</Label>
+            <Input {...register('email', { required: true })} />
+            {errors.email && (
+              <p>
+                {errors.email.message?.toString() || '이메일은 필수입니다.'}
+              </p>
+            )}
+          </div>
+          <div className="control mt-1 w-full">
+            <Label>비밀번호</Label>
+            <Input
+              type="password"
+              {...register('password', { required: true })}
+            />
+            {errors.password && (
+              <p>
+                {errors.password.message?.toString() ||
+                  '비밀번호는 필수입니다.'}
+              </p>
+            )}
+          </div>
+        </CardContent>
+        <CardFooter className='w-full'>
+          <Button className="mt-4 w-full" type="submit">
+            회원가입
+          </Button>
+        </CardFooter>
+      </form>
+    </Card>
   );
 }
 export default JoinForm;

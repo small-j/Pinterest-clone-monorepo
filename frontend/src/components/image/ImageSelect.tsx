@@ -19,7 +19,7 @@ function ImageSelect({ uploadFile, imageUploadedData }: Props) {
         <>
           <label htmlFor="input-file">
             <div className="w-[375px] h-[574px] flex justify-center items-center  bg-[#e9e9e9] border-2 border-dashed border-gray-300 rounded-3xl">
-              <div>파일을 선택하거나 여기로 끌어다 놓으세요.</div>
+              <div>파일을 선택하세요.</div>
             </div>
           </label>
           <Input

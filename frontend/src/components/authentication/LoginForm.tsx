@@ -3,21 +3,13 @@ import { Label } from '../shadcn/ui/label';
 import { Input } from '../shadcn/ui/input';
 import { Button } from '../shadcn/ui/button';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ErrorResponse, Response } from '@/src/api/types/common.data.type';
+import { ErrorResponse, Response } from '../../api/types/common.data.type';
 import { login } from '../../api/auth.api';
 import { useContext, useState } from 'react';
-import { commonValue } from '../../api/common.value';
 import { UserContext } from '../../context/UserContext';
-import { LoginUserInfo } from '@/src/api/types/auth.data.type';
+import { LoginUserInfo } from '../../api/types/auth.data.type';
 import { Card, CardContent, CardFooter, CardHeader } from '../shadcn/ui/card';
-
-const loginSchema = {
-  type: 'object',
-  properties: {
-    email: { type: 'string', format: 'email' },
-  },
-  required: ['email'],
-};
+import { getValidStateLoginInfo } from '../../validator/auth.validator';
 
 function LoginForm() {
   const {
@@ -32,8 +24,7 @@ function LoginForm() {
   const location = useLocation();
 
   const validateWithAjv = (data: FieldValues) => {
-    const validate = commonValue.AJV.compile(loginSchema);
-    const valid = validate(data);
+    const [validate, valid] = getValidStateLoginInfo({ email: data.email, password: data.password });
 
     if (!valid) {
       validate.errors?.forEach((error) => {
@@ -42,6 +33,9 @@ function LoginForm() {
             type: 'manual',
             message: '잘못된 이메일 주소입니다.',
           });
+        }
+        else {
+          setIsFailed(true);
         }
       });
       return false;
@@ -52,6 +46,7 @@ function LoginForm() {
   const getRedirectPath = () => {
     let arr = location.search.split('&');
     arr = arr.filter((param) => param.includes('redirect'));
+    if (arr.length === 0) return '/';
     return arr[0].split('=')[1];
   };
 

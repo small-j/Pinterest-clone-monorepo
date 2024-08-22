@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { SyntheticEvent, useState } from 'react';
 import {
   Command,
   CommandEmpty,
@@ -19,8 +19,10 @@ interface Props {
 function CategoryCombobox({ selectHandler, items }: Props) {
   const [open, setOpen] = useState(false);
 
-  const selectCommandItemHandler = (value: string) => {
-    selectHandler(Number.parseInt(value));
+  const clickHandler = (e: SyntheticEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLDivElement;
+    if (!target.dataset['id']) return; // todo 알수 없는 에러 alert 띄우기.
+    selectHandler(Number.parseInt(target.dataset['id']));
     setOpen(false);
   };
 
@@ -31,20 +33,22 @@ function CategoryCombobox({ selectHandler, items }: Props) {
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">
         <Command className="rounded-lg border shadow-md">
-          <CommandInput placeholder="Search framework..." className="h-9" />
+          <CommandInput placeholder="태그 검색" className="h-9" />
           <CommandList>
             <CommandEmpty>결과를 찾을 수 없습니다.</CommandEmpty>
-            <CommandGroup heading="일치 태그">
-              {items.map((item) => (
-                <CommandItem
-                  key={item.id}
-                  value={item.id.toString()}
-                  onSelect={selectCommandItemHandler}
-                >
-                  {item.name}
-                </CommandItem>
-              ))}
-            </CommandGroup>
+            {items && (
+              <CommandGroup heading="일치 태그" onClick={clickHandler}>
+                {items.map((item) => (
+                  <CommandItem
+                    key={item.id}
+                    value={item.name}
+                    data-id={item.id}
+                  >
+                    {item.name}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
           </CommandList>
         </Command>
       </PopoverContent>

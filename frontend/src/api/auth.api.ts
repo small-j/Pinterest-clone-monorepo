@@ -1,19 +1,9 @@
+import { validateJoinInfo, validateLoginInfo, validateLoginUserInfo, validateUserId } from '../validator/auth.validator';
 import { commonValue } from './common.value';
-import { LoginUserInfo } from './types/auth.data.type';
+import { JoinInfo, LoginInfo, LoginUserInfo } from './types/auth.data.type';
 import { ErrorResponse, Response } from './types/common.data.type';
 
 const PREFIX_URL = '/user';
-
-interface LoginInfo {
-  email: string;
-  password: string;
-}
-
-interface JoinInfo {
-  name: string;
-  email: string;
-  password: string;
-}
 
 interface LoginResponse {
   id: number;
@@ -26,7 +16,8 @@ export async function login(
   callback: (data: Response<LoginUserInfo> | ErrorResponse) => void,
 ) {
   let token = '';
-
+  validateLoginInfo(loginInfo);
+  
   try {
     const result = await fetch(`${commonValue.ORIGIN}${PREFIX_URL}/login`, {
       method: 'POST',
@@ -41,6 +32,7 @@ export async function login(
         commonValue.TOKEN_HEADER,
       ) as string;
 
+      if (!res.ok) throw new Error();
       return res.json();
     });
 
@@ -50,22 +42,12 @@ export async function login(
   }
 }
 
-function LoginResponseAdaptor(res: LoginResponse, token: string): Response<LoginUserInfo> {
-  return {
-    data: {
-      token: token,
-      id: res.id,
-      name: res.name,
-      email: res.email,
-    },
-    success: true,
-  };
-}
-
 export async function join(
   joinInfo: JoinInfo,
-  callback: (data: Response<string> | ErrorResponse) => void,
+  callback: (data: Response<number> | ErrorResponse) => void,
 ) {
+  validateJoinInfo(joinInfo);
+
   try {
     const result = await fetch(`${commonValue.ORIGIN}${PREFIX_URL}/join`, {
       method: 'POST',
@@ -75,10 +57,29 @@ export async function join(
         password: joinInfo.password,
       }),
       headers: { 'Content-Type': 'application/json' },
-    }).then((res) => res.json());
+    }).then((res) => {
+      if (!res.ok) throw new Error();
+      return res.json();
+    });
 
+    validateUserId(result);
     return callback({ data: result, success: true });
   } catch {
     callback({ data: null, errorMessage: 'Failed to sign up', success: false });
   }
+}
+
+function LoginResponseAdaptor(res: LoginResponse, token: string): Response<LoginUserInfo> {
+  const data = {
+    token: token,
+    id: res.id,
+    name: res.name,
+    email: res.email,
+  };
+  validateLoginUserInfo(data);
+
+  return {
+    data,
+    success: true,
+  };
 }

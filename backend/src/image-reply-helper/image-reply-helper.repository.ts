@@ -26,12 +26,6 @@ export class FindImageRepliesWithUserByImageHelperRepository extends Repository<
   }
 
   async findByImageWithUser(image: Image): Promise<ImageReply[]> {
-    // return await this.find({
-    //   where: {
-    //     image: { id: image.id },
-    //   },
-    //   relations: ['image', 'user'],
-    // });
     return await this.manager
       .createQueryBuilder(ImageReply, 'a')
       .leftJoin('a.image', 'b')

@@ -69,7 +69,7 @@ export class SaveImageService {
     );
     this.validateSaveImage(saveImage);
 
-    return new GetSaveImageDto(saveImage.id, imageId, user.id);
+    return new GetSaveImageDto(saveImage.id, user.id, image.id);
   }
 
   private validateSaveImage(saveImage: SaveImage) {

@@ -24,6 +24,7 @@ import { UserImageHistory } from 'src/user-image-history/entities/user-image-his
 import { DeleteSaveImageToImageHelperRepository } from 'src/save-image-helper/save-image-helper.repository';
 import { CustomStorageManager } from 'src/storage/storage-manager.interface';
 import { FindImageRepliesWithUserByImageHelperRepository } from 'src/image-reply-helper/image-reply-helper.repository';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class ImageService {

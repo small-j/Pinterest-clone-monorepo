@@ -1,3 +1,4 @@
+import { validateCreateImageReply, validateImageReplyId, validateSaveImageInfo } from '../validator/reply.validator';
 import { commonValue } from './common.value';
 import { ErrorResponse, Response } from './types/common.data.type';
 import { CreateImageReply, ImageReplyInfo } from './types/reply.data.type';
@@ -15,6 +16,8 @@ export async function createImageReply(
   replyInfo: CreateImageReply,
   callback: (data: Response<ImageReplyInfo> | ErrorResponse) => void,
 ) {
+  validateCreateImageReply(replyInfo);
+
   try {
     const result = await fetch(`${commonValue.ORIGIN}${PREFIX_URL}`, {
       method: 'POST',
@@ -27,7 +30,10 @@ export async function createImageReply(
         [commonValue.TOKEN_HEADER]: commonValue.ACCESS_TOKEN,
       },
       credentials: 'include',
-    }).then((res) => res.json());
+    }).then((res) => {
+      if (!res.ok) throw new Error();
+      return res.json();
+    });
 
     return callback(imageReplyDataAdaptor(result));
   } catch {
@@ -39,27 +45,15 @@ export async function createImageReply(
   }
 }
 
-function imageReplyDataAdaptor(
-  res: ImageReplyInfoResponse,
-): Response<ImageReplyInfo> {
-  return {
-    data: {
-      id: res.id,
-      content: res.content,
-      userId: res.userId,
-      userName: res.userName,
-    },
-    success: true,
-  };
-}
-
 export async function deleteImageReply(
-  id: string,
+  id: number,
   callback: (data: Response<ImageReplyInfo> | ErrorResponse) => void,
 ) {
+  validateImageReplyId(id);
+
   try {
     const params = new URLSearchParams({
-      'id': id,
+      'id': id.toString(),
     }).toString();
     const url = `${commonValue.ORIGIN}${PREFIX_URL}?${params}`;
     const result = await fetch(url, {
@@ -69,9 +63,12 @@ export async function deleteImageReply(
         [commonValue.TOKEN_HEADER]: commonValue.ACCESS_TOKEN,
       },
       credentials: 'include',
-    }).then((res) => res.json());
+    }).then((res) => {
+      if (!res.ok) throw new Error();
+      return res.json();
+    });
 
-    return callback({ data: result, success: true });
+    return callback(imageReplyDataAdaptor(result));
   } catch {
     callback({
       data: null,
@@ -79,4 +76,21 @@ export async function deleteImageReply(
       success: false,
     });
   }
+}
+
+function imageReplyDataAdaptor(
+  res: ImageReplyInfoResponse,
+): Response<ImageReplyInfo> {
+  const data = {
+    id: res.id,
+    content: res.content,
+    userId: res.userId,
+    userName: res.userName,
+  };
+  validateSaveImageInfo(data);
+
+  return {
+    data,
+    success: true,
+  };
 }

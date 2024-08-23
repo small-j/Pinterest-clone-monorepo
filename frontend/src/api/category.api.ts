@@ -16,7 +16,10 @@ export async function getCategories(
         [commonValue.TOKEN_HEADER]: commonValue.ACCESS_TOKEN,
       },
       credentials: 'include',
-    }).then((res) => res.json());
+    }).then((res) => {
+      if (!res.ok) throw new Error();
+      return res.json();
+    });
 
     callback(categoryDataAdaptor(result));
   } catch {
@@ -27,11 +30,13 @@ export async function getCategories(
 function categoryDataAdaptor(
   res: CategoryInfoResponse,
 ): Response<CategoryInfo[]> {
+  const data = res.map((c) => ({
+    id: c.id,
+    name: c.name,
+  }));
+
   return {
-    data: res.map((c) => ({
-      id: c.id,
-      name: c.name,
-    })),
+    data,
     success: true,
   };
 }

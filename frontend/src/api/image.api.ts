@@ -1,3 +1,13 @@
+import {
+  validateCreateImagePinInfo,
+  validateFileInfo,
+  validateImageDetailInfo,
+  validateImageId,
+  validateImagePinInfo,
+  validateMainImageInfo,
+  validateSearchImageInfo,
+  validateSearchWord,
+} from '../validator/image.validator';
 import { commonValue } from './common.value';
 import {
   ErrorResponse,
@@ -15,7 +25,9 @@ import {
 
 const PREFIX_URL = '/image';
 
+type ImagePinResponse = { id: number; url: string };
 type MainImageResponse = { id: number; url: string }[];
+type SearchImageResponse = { id: number; url: string }[];
 type FileInfoResponse = { key: string; url: string };
 type ImageDetailsResponse = {
   id: number;
@@ -46,7 +58,10 @@ export async function getMainImages(
         [commonValue.TOKEN_HEADER]: commonValue.ACCESS_TOKEN,
       },
       credentials: 'include',
-    }).then((res) => res.json());
+    }).then((res) => {
+      if (!res.ok) throw new Error();
+      return res.json();
+    });
 
     callback(mainImageDataAdaptor(result));
   } catch {
@@ -54,24 +69,12 @@ export async function getMainImages(
   }
 }
 
-function mainImageDataAdaptor(res: MainImageResponse): Response<MainImage> {
-  return {
-    data: {
-      images: res.map((d) => ({
-        id: d.id,
-        url: d.url,
-      })),
-    },
-    success: true,
-  };
-}
-
-type SearchImageResponse = { id: number; url: string }[];
-
 export async function getSearchImages(
   searchWord: string,
   callback: ResponseCallback<SearchImage>,
 ) {
+  validateSearchWord(searchWord);
+
   try {
     const params = new URLSearchParams({
       'search-word': searchWord,
@@ -83,7 +86,10 @@ export async function getSearchImages(
         [commonValue.TOKEN_HEADER]: commonValue.ACCESS_TOKEN,
       },
       credentials: 'include',
-    }).then((res) => res.json());
+    }).then((res) => {
+      if (!res.ok) throw new Error();
+      return res.json();
+    });
 
     callback(searchImageDataAdaptor(result));
   } catch {
@@ -91,27 +97,15 @@ export async function getSearchImages(
   }
 }
 
-function searchImageDataAdaptor(
-  res: SearchImageResponse,
-): Response<SearchImage> {
-  return {
-    data: {
-      images: res.map((d) => ({
-        id: d.id,
-        url: d.url,
-      })),
-    },
-    success: true,
-  };
-}
-
 export async function getImageDetails(
-  id: string,
+  id: number,
   callback: ResponseCallback<ImageDetailsInfo>,
 ) {
+  validateImageId(id);
+
   try {
     const params = new URLSearchParams({
-      'id': id,
+      id: id.toString(),
     }).toString();
     const url = `${commonValue.ORIGIN}${PREFIX_URL}?${params}`;
     const result = await fetch(url, {
@@ -120,43 +114,19 @@ export async function getImageDetails(
         [commonValue.TOKEN_HEADER]: commonValue.ACCESS_TOKEN,
       },
       credentials: 'include',
-    }).then((res) => res.json());
+    }).then((res) => {
+      if (!res.ok) throw new Error();
+      return res.json();
+    });
 
     callback(imageDetailsDataAdaptor(result));
   } catch {
-    callback({ data: null, errorMessage: '이미지 세부 정보 로드 실패', success: false });
+    callback({
+      data: null,
+      errorMessage: '이미지 세부 정보 로드 실패',
+      success: false,
+    });
   }
-}
-
-function imageDetailsDataAdaptor(
-  res: ImageDetailsResponse,
-): Response<ImageDetailsInfo> {
-  return {
-    data: {
-      imageDetails: {
-        id: res.id,
-        title: res.title,
-        content: res.content,
-        url: res.imageUrl,
-        userId: res.userId,
-        userName: res.userName,
-        userEmail: res.userEmail,
-        replies: res.imageReplies.map((reply) => ({
-          id: reply.replyId,
-          content: reply.replyContent,
-          userId: reply.userId,
-          userName: !reply.userName ? '' : reply.userName,
-        })),
-        moreImages: {
-          images: res.moreImages.map((image) => ({
-            id: image.id,
-            url: image.url,
-          })),
-        },
-      },
-    },
-    success: true,
-  };
 }
 
 export async function uploadImage(
@@ -174,7 +144,7 @@ export async function uploadImage(
       },
       credentials: 'include',
     }).then((res) => {
-      if (res.status !== 201) throw new Error();
+      if (!res.ok) throw new Error();
       return res.json();
     });
 
@@ -188,22 +158,12 @@ export async function uploadImage(
   }
 }
 
-function imageFileDataAdaptor(res: FileInfoResponse): Response<FileInfo> {
-  return {
-    data: {
-      fileMetaData: {
-        key: res.key,
-        url: res.url,
-      },
-    },
-    success: true,
-  };
-}
-
 export async function createImagePin(
   imagePinInfo: CreateImagePinInfo,
   callback: (data: Response<ImagePin> | ErrorResponse) => void,
 ) {
+  validateCreateImagePinInfo(imagePinInfo);
+
   try {
     const result = await fetch(`${commonValue.ORIGIN}${PREFIX_URL}/meta`, {
       method: 'POST',
@@ -219,9 +179,12 @@ export async function createImagePin(
         [commonValue.TOKEN_HEADER]: commonValue.ACCESS_TOKEN,
       },
       credentials: 'include',
-    }).then((res) => res.json());
+    }).then((res) => {
+      if (!res.ok) throw new Error();
+      return res.json();
+    });
 
-    return callback({ data: result, success: true });
+    return callback(imagePinDataAdaptor(result));
   } catch {
     callback({
       data: null,
@@ -232,12 +195,14 @@ export async function createImagePin(
 }
 
 export async function deleteImagePin(
-  id: string,
+  id: number,
   callback: (data: Response<ImagePin> | ErrorResponse) => void,
 ) {
+  validateImageId(id);
+
   try {
     const params = new URLSearchParams({
-      'id': id,
+      id: id.toString(),
     }).toString();
     const url = `${commonValue.ORIGIN}${PREFIX_URL}?${params}`;
     const result = await fetch(url, {
@@ -247,9 +212,12 @@ export async function deleteImagePin(
         [commonValue.TOKEN_HEADER]: commonValue.ACCESS_TOKEN,
       },
       credentials: 'include',
-    }).then((res) => res.json());
+    }).then((res) => {
+      if (!res.ok) throw new Error();
+      return res.json();
+    });
 
-    return callback({ data: result, success: true });
+    return callback(imagePinDataAdaptor(result));
   } catch {
     callback({
       data: null,
@@ -257,4 +225,98 @@ export async function deleteImagePin(
       success: false,
     });
   }
+}
+
+function imagePinDataAdaptor(res: ImagePinResponse): Response<ImagePin> {
+  const data = {
+    id: res.id,
+    url: res.url,
+  };
+  validateImagePinInfo(data);
+
+  return {
+    data,
+    success: true,
+  };
+}
+
+function mainImageDataAdaptor(res: MainImageResponse): Response<MainImage> {
+  const data = {
+    images: res.map((d) => ({
+      id: d.id,
+      url: d.url,
+    })),
+  };
+  validateMainImageInfo(data);
+
+  return {
+    data,
+    success: true,
+  };
+}
+
+function searchImageDataAdaptor(
+  res: SearchImageResponse,
+): Response<SearchImage> {
+  const data = {
+    images: res.map((d) => ({
+      id: d.id,
+      url: d.url,
+    })),
+  };
+  validateSearchImageInfo(data);
+
+  return {
+    data,
+    success: true,
+  };
+}
+
+function imageFileDataAdaptor(res: FileInfoResponse): Response<FileInfo> {
+  const data = {
+    fileMetaData: {
+      key: res.key,
+      url: res.url,
+    },
+  };
+  validateFileInfo(data);
+
+  return {
+    data,
+    success: true,
+  };
+}
+
+function imageDetailsDataAdaptor(
+  res: ImageDetailsResponse,
+): Response<ImageDetailsInfo> {
+  const data = {
+    imageDetails: {
+      id: res.id,
+      title: res.title,
+      content: res.content,
+      url: res.imageUrl,
+      userId: res.userId,
+      userName: res.userName,
+      userEmail: res.userEmail,
+      replies: res.imageReplies.map((reply) => ({
+        id: reply.replyId,
+        content: reply.replyContent,
+        userId: reply.userId,
+        userName: !reply.userName ? '' : reply.userName,
+      })),
+      moreImages: {
+        images: res.moreImages.map((image) => ({
+          id: image.id,
+          url: image.url,
+        })),
+      },
+    },
+  };
+  validateImageDetailInfo(data);
+
+  return {
+    data,
+    success: true,
+  };
 }

@@ -1,3 +1,9 @@
+import { validateImageId } from '../validator/image.validator';
+import {
+  validateDeleteSaveImageInfo,
+  validateSaveImageId,
+  validateSaveImageInfo,
+} from '../validator/saveimage.validator';
 import { commonValue } from './common.value';
 import { ErrorResponse, Response } from './types/common.data.type';
 import {
@@ -7,9 +13,9 @@ import {
 
 const PREFIX_URL = '/save-image';
 
-type SaveImageInfoResponse = {
+export type SaveImageInfoResponse = {
   id: number;
-  imageId: number;
+  imageMetaId: number;
   userId: number;
 };
 
@@ -18,9 +24,11 @@ interface SaveImageDeleteResponse {
 }
 
 export async function getSaveImage(
-  id: string,
+  id: number,
   callback: (data: Response<SaveImageInfo> | ErrorResponse) => void,
 ) {
+  validateSaveImageId(id);
+
   const params = new URLSearchParams({
     imageId: id.toString(),
   }).toString();
@@ -51,6 +59,8 @@ export async function createSaveImage(
   imageId: number,
   callback: (data: Response<SaveImageInfo> | ErrorResponse) => void,
 ) {
+  validateImageId(imageId);
+
   try {
     const result = await fetch(`${commonValue.ORIGIN}${PREFIX_URL}`, {
       method: 'POST',
@@ -62,7 +72,10 @@ export async function createSaveImage(
         [commonValue.TOKEN_HEADER]: commonValue.ACCESS_TOKEN,
       },
       credentials: 'include',
-    }).then((res) => res.json());
+    }).then((res) => {
+      if (!res.ok) throw new Error();
+      return res.json();
+    });
 
     return callback(saveImageDataAdaptor(result));
   } catch {
@@ -78,6 +91,8 @@ export async function deleteSaveImage(
   id: number,
   callback: (data: Response<SaveImageDeleteInfo> | ErrorResponse) => void,
 ) {
+  validateSaveImageId(id);
+
   try {
     const params = new URLSearchParams({
       id: id.toString(),
@@ -108,12 +123,15 @@ export async function deleteSaveImage(
 function saveImageDataAdaptor(
   res: SaveImageInfoResponse,
 ): Response<SaveImageInfo> {
+  const data = {
+    id: res.id,
+    imageId: res.imageMetaId,
+    userId: res.userId,
+  };
+  validateSaveImageInfo(data);
+
   return {
-    data: {
-      id: res.id,
-      imageId: res.imageId,
-      userId: res.userId,
-    },
+    data,
     success: true,
   };
 }
@@ -121,10 +139,13 @@ function saveImageDataAdaptor(
 function saveImageDeleteAdaptor(
   res: SaveImageDeleteResponse,
 ): Response<SaveImageDeleteInfo> {
+  const data = {
+    id: res.id,
+  };
+  validateDeleteSaveImageInfo(data);
+
   return {
-    data: {
-      id: res.id,
-    },
+    data,
     success: true,
   };
 }

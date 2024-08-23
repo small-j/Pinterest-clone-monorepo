@@ -3,28 +3,10 @@ import { Label } from '../shadcn/ui/label';
 import { Input } from '../shadcn/ui/input';
 import { Button } from '../shadcn/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { ErrorResponse, Response } from '@/src/api/types/common.data.type';
+import { ErrorResponse, Response } from '../../api/types/common.data.type';
 import { join } from '../../api/auth.api';
-import { JSONSchemaType } from 'ajv';
-import { commonValue } from '../../api/common.value';
 import { Card, CardContent, CardFooter, CardHeader } from '../shadcn/ui/card';
-
-interface JoinData {
-  email: string;
-  name: string;
-  password: string;
-}
-
-const loginSchema: JSONSchemaType<JoinData> = {
-  type: 'object',
-  properties: {
-    name: { type: 'string' },
-    email: { type: 'string', format: 'email' },
-    password: { type: 'string', minLength: 6 },
-  },
-  required: ['name', 'email', 'password'],
-  additionalProperties: false,
-};
+import { getValidStateJoinInfo } from '../../validator/auth.validator';
 
 function JoinForm() {
   const {
@@ -36,8 +18,7 @@ function JoinForm() {
   const navigate = useNavigate();
 
   const validateWithAjv = (data: FieldValues) => {
-    const validate = commonValue.AJV.compile(loginSchema);
-    const valid = validate(data);
+    const [validate, valid] = getValidStateJoinInfo({ name: data.name, email: data.email, password: data.password });
 
     if (!valid) {
       validate.errors?.forEach((error) => {
@@ -64,7 +45,7 @@ function JoinForm() {
 
     join(
       { name: data.name, email: data.email, password: data.password },
-      (res: Response<string> | ErrorResponse) => {
+      (res: Response<number> | ErrorResponse) => {
         if (res?.success) navigate('/login');
       },
     );

@@ -72,7 +72,7 @@ function ImagePinDetail({
   };
 
   const deleteImageReplyRequest = (id: number) => {
-    deleteImageReply(id.toString(), (res) => {
+    deleteImageReply(id, (res) => {
       if (!res || !res.success) {
         // todo 댓글 삭제 실패 안내문 alert 띄우기.
         return;

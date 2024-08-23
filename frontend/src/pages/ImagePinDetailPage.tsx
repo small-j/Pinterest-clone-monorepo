@@ -42,14 +42,14 @@ function ImagePinDetailPage() {
 
   const getImageDeatilsData = () => {
     if (!param.id) return;
-    getImageDetails(param.id, (res) => {
+    getImageDetails(Number.parseInt(param.id), (res) => {
       setImageDetails(res);
     });
   };
 
   const getSaveImageData = () => {
     if (!param.id) return;
-    getSaveImage(param.id, (res) => {
+    getSaveImage(Number.parseInt(param.id), (res) => {
       if (!res || !res.success) return;
       else if (res.data) {
         setIsSaved(true);
@@ -60,7 +60,7 @@ function ImagePinDetailPage() {
 
   const deleteImagePinRequest = (id: number) => {
     setLoading(true);
-    deleteImagePin(id.toString(), (res) => {
+    deleteImagePin(id, (res) => {
       if (!res || !res.success) setLoading(false);
       else if (res.success) navigate('/');
     });

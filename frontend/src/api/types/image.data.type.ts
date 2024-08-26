@@ -2,6 +2,7 @@
     프론트에서 사용할 형태의 데이터 타입을 지정.
 */
 
+import { PaginationInfo } from "./common.data.type";
 import { ImageReplyInfo } from "./reply.data.type";
 
 export interface ImagePin {
@@ -13,7 +14,11 @@ export interface ImagePins {
   images: ImagePin[] | void[];
 }
 
-export type MainImage = ImagePins;
+export interface MainImage {
+  imagePins: ImagePins;
+  paginationInfo: PaginationInfo;
+  seed: number;
+}
 export type SearchImage = ImagePins;
 
 export interface FileInfo {

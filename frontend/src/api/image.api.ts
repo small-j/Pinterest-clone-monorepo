@@ -5,12 +5,15 @@ import {
   validateImageId,
   validateImagePinInfo,
   validateMainImageInfo,
+  validatePaginationParams,
   validateSearchImageInfo,
   validateSearchWord,
+  validateSeedParams,
 } from '../validator/image.validator';
 import { commonValue } from './common.value';
 import {
   ErrorResponse,
+  PaginationParams,
   Response,
   ResponseCallback,
 } from './types/common.data.type';
@@ -26,7 +29,17 @@ import {
 const PREFIX_URL = '/image';
 
 type ImagePinResponse = { id: number; url: string };
-type MainImageResponse = { id: number; url: string }[];
+type MainImageResponse = {
+  paginationData: {
+    size: number;
+    page: number;
+    totalPage: number;
+    totalCount: number;
+    isLastPage: boolean;
+  };
+  images: { id: number; url: string }[];
+  seed: number;
+};
 type SearchImageResponse = { id: number; url: string }[];
 type FileInfoResponse = { key: string; url: string };
 type ImageDetailsResponse = {
@@ -49,10 +62,22 @@ type ImageReplyResponse = {
 type MoreImageResponse = { id: number; url: string }[];
 
 export async function getMainImages(
+  paginationParams: PaginationParams,
   callback: (data: Response<MainImage> | ErrorResponse) => void,
+  seed?: number,
 ) {
+  validatePaginationParams(paginationParams);
+  if (seed) validateSeedParams(seed);
+
   try {
-    const result = await fetch(`${commonValue.ORIGIN}${PREFIX_URL}/main`, {
+    const params = new URLSearchParams({
+      size: paginationParams.size.toString(),
+      page: paginationParams.page.toString(),
+    });
+    if (seed) params.set('seed', seed.toString());
+
+    const url = `${commonValue.ORIGIN}${PREFIX_URL}/main?${params.toString()}`;
+    const result = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
         [commonValue.TOKEN_HEADER]: commonValue.ACCESS_TOKEN,
@@ -242,10 +267,20 @@ function imagePinDataAdaptor(res: ImagePinResponse): Response<ImagePin> {
 
 function mainImageDataAdaptor(res: MainImageResponse): Response<MainImage> {
   const data = {
-    images: res.map((d) => ({
-      id: d.id,
-      url: d.url,
-    })),
+    paginationInfo: {
+      size: res.paginationData.size,
+      page: res.paginationData.page,
+      totalPage: res.paginationData.totalPage,
+      totalCount: res.paginationData.totalCount,
+      isLastPage: res.paginationData.isLastPage,
+    },
+    imagePins: {
+      images: res.images.map((d) => ({
+        id: d.id,
+        url: d.url,
+      })),
+    },
+    seed: res.seed,
   };
   validateMainImageInfo(data);
 

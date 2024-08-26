@@ -40,7 +40,13 @@ export class ImageRepository extends Repository<Image> {
     return query.getMany();
   }
 
-  async getRecommendRandomImages(categories: Category[]): Promise<Image[]> {
+  async getRecommendRandomImages(
+    categories: Category[],
+    size: number,
+    page: number,
+    seed: number,
+  ): Promise<{ data: Image[]; count: number }> {
+    await this.manager.query(`SELECT setseed(${seed});`);
     const query = this.manager
       .createQueryBuilder(Image, 'a')
       .innerJoin('a.imageCategories', 'b');
@@ -49,10 +55,19 @@ export class ImageRepository extends Repository<Image> {
       query.where('b.category.id IN (:...categoryIds)', {
         categoryIds: categories.map((imageCategory) => imageCategory.id),
       });
+    query.groupBy('a.id');
 
-    query.groupBy('a.id').orderBy('RANDOM()').limit(30); // TODO: 이게 30개인 이유는?
+    const count = await query.getCount();
 
-    return query.getMany();
+    query.addSelect('RANDOM()', 'random_order');
+    query.orderBy('random_order');
+
+    query.skip((page - 1) * size);
+    query.take(size);
+
+    const data = await query.getMany();
+
+    return { data, count };
   }
 
   async getImageTitleOrContentRelationalImages(

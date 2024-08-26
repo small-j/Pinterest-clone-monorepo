@@ -19,6 +19,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { RolesGuard } from 'src/guard/roles-guard';
 import { AuthUser } from 'src/decorator/auth-user.decorator';
 import { User } from 'src/user/entities/user.entity';
+import { GetImagesDto } from './dto/get-images.dto';
 
 @Controller('image')
 export class ImageController {
@@ -63,7 +64,17 @@ export class ImageController {
   }
 
   @Get('/main')
-  async mainImage(@AuthUser() user: User): Promise<GetImageDto[]> {
-    return await this.imageService.getMainImages(user);
+  async mainImage(
+    @AuthUser() user: User,
+    @Query('size') size: string,
+    @Query('page') page: string,
+    @Query('seed') seed?: string,
+  ): Promise<GetImagesDto> {
+    return await this.imageService.getMainImages(
+      user,
+      Number.parseInt(size),
+      Number.parseInt(page),
+      Number.parseFloat(seed),
+    );
   }
 }

@@ -24,6 +24,8 @@ import { UserImageHistory } from 'src/user-image-history/entities/user-image-his
 import { DeleteSaveImageToImageHelperRepository } from 'src/save-image-helper/save-image-helper.repository';
 import { CustomStorageManager } from 'src/storage/storage-manager.interface';
 import { FindImageRepliesWithUserByImageHelperRepository } from 'src/image-reply-helper/image-reply-helper.repository';
+import { GetImagesDto } from './dto/get-images.dto';
+import { GetPaginationDataDto } from './dto/get-pagination-data.dto';
 
 @Injectable()
 export class ImageService {
@@ -144,8 +146,14 @@ export class ImageService {
     );
   }
 
-  async getMainImages(user: User): Promise<GetImageDto[]> {
+  async getMainImages(
+    user: User,
+    size: number,
+    page: number,
+    seed?: number,
+  ): Promise<GetImagesDto> {
     this.validateUser(user);
+    if (size <= 0 || page <= 0) throw new BadRequestException();
 
     const userImageHistories =
       await this.userImageHistoryRepository.findUserImageHistoriesWithImages(
@@ -161,11 +169,31 @@ export class ImageService {
     const categories = await Promise.all(
       imageCategories.map((imageCategory) => imageCategory.category),
     );
-    // 카테고리 id를 기반으로 뽑은 추천 이미지.
-    const recommendRandomImages =
-      await this.imageRepository.getRecommendRandomImages(categories);
 
-    return GetImageDto.of(recommendRandomImages);
+    if (!seed) {
+      const now = Date.now();
+      seed = now / Math.pow(10, now.toString().length);
+    }
+    // 카테고리 id를 기반으로 뽑은 추천 이미지.
+    const { data, count } = await this.imageRepository.getRecommendRandomImages(
+      categories,
+      size,
+      page,
+      seed,
+    );
+
+    const totalPage = Math.ceil(count / size);
+    if (totalPage < page) throw new BadRequestException();
+
+    const paginationData = new GetPaginationDataDto(
+      size,
+      page,
+      totalPage,
+      count,
+      page === totalPage,
+    );
+
+    return GetImagesDto.of(data, paginationData, seed);
   }
 
   async getSearchImages(searchStr: string): Promise<GetImageDto[]> {

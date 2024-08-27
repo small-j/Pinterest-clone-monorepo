@@ -199,30 +199,16 @@ export class ImageService {
   async getSearchImages(searchStr: string): Promise<GetImageDto[]> {
     this.validateSearchString(searchStr);
 
-    const imageTitleOrContentRelationalImages =
-      await this.imageRepository.getImageTitleOrContentRelationalImages(
+    const categories =
+      await this.categoryRepository.getCategoriesByCategoryName(searchStr);
+
+    const result =
+      await this.imageRepository.getImagesByTitleOrContentOrCategories(
         searchStr,
+        categories,
       );
-    const imageCategories =
-      await this.imageCategoryRepository.getImageCategoryFromSearchWord(
-        searchStr,
-      ); // TODO: Category 중복 제거할 방법 찾기.
-    const categories = await Promise.all(
-      imageCategories.map((imageCategory) => imageCategory.category),
-    );
 
-    let categoryRelationalImages = [];
-    if (imageCategories.length > 0) {
-      categoryRelationalImages =
-        await this.imageRepository.getCategoryRelationalImages(categories);
-    }
-
-    return GetImageDto.of(
-      this.combineList(
-        categoryRelationalImages,
-        imageTitleOrContentRelationalImages,
-      ),
-    );
+    return GetImageDto.of(result);
   }
 
   async addUserImageHistory(image: Image, userId: number): Promise<void> {

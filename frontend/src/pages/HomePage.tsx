@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getMainImages } from '../api/image.api';
 import ImagePinList from '../components/image/ImagePinList';
 import { ErrorResponse, Response } from '../api/types/common.data.type';
@@ -10,6 +10,11 @@ function HomePage() {
     Response<MainImage> | ErrorResponse
   >();
   const page = useRef<number>(1);
+  const [isFetching, setFetching] = useState(false);
+  const isLastPage = useMemo<boolean>(() => {
+    if (!imageDatas || !imageDatas.data) return true;
+    return imageDatas.data.paginationInfo.isLastPage;
+  }, [imageDatas]);
 
   useEffect(() => {
     fetchData();
@@ -21,11 +26,13 @@ function HomePage() {
     const callback = (res: Response<MainImage> | ErrorResponse) => {
       setImageDatas(res);
       page.current = page.current + 1;
+      setFetching(false);
     };
     const seed = imageDatas?.data?.seed;
 
     if (seed) getMainImages({ size, page: page.current }, callback, seed);
     else getMainImages({ size, page: page.current }, callback);
+    setFetching(true);
   }, [imageDatas]);
 
   const isErrorResponse = (
@@ -33,10 +40,6 @@ function HomePage() {
   ): response is ErrorResponse => {
     return !!response && response.success === false;
   };
-
-  const isCanFetchData = useCallback(() => {
-    return !imageDatas?.data?.paginationInfo.isLastPage;
-  }, [imageDatas]);
 
   return (
     <div className="w-full flex flex-row flex-wrap justify-center">
@@ -46,7 +49,8 @@ function HomePage() {
         <ImagePinList
           imageDatas={imageDatas.data.imagePins}
           fetchData={fetchData}
-          isCanFetchData={isCanFetchData}
+          isFetching={isFetching}
+          isLastPage={isLastPage}
         ></ImagePinList>
       )}
     </div>

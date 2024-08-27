@@ -1,13 +1,7 @@
 import ImagePin from './ImagePin';
 import { ImagePins } from '@/src/api/types/image.data.type';
 import EmptyImagePin from './EmptyImagePin';
-import {
-  ReactNode,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 
 interface Props {
   imageDatas: ImagePins;
@@ -28,16 +22,19 @@ function ImagePinList({
     rootMargin: '0px',
     threshold: 0.5,
   };
-  const callback: IntersectionObserverCallback = useCallback((entries, observer) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        if (isLastPage) {
-          observer.unobserve(entry.target);
+  const callback: IntersectionObserverCallback = useCallback(
+    (entries, observer) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          if (isLastPage) {
+            observer.unobserve(entry.target);
+          }
+          if (!isLastPage && !isFetching) fetchData();
         }
-        if (!isLastPage && !isFetching) fetchData();
-      }
-    });
-  }, [isLastPage, isFetching]);
+      });
+    },
+    [isLastPage, isFetching],
+  );
 
   useEffect(() => {
     if (!imagePinRef.current) return;

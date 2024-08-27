@@ -21,23 +21,32 @@ export class ImageRepository extends Repository<Image> {
   async findImagesWithSimilarCategories(
     categories: Category[],
     imageId: number,
-  ): Promise<Image[]> {
+    size: number,
+    page: number,
+  ): Promise<{ data: Image[]; count: number }> {
     const query = this.manager
       .createQueryBuilder(Image, 'a')
-      .innerJoin('a.imageCategories', 'b');
+      .innerJoin('a.imageCategories', 'b')
+      .select(['a', 'COUNT(a.id) as imageCategoryCount'])
+      .where('a.id != :imageId', { imageId });
 
     if (categories.length !== 0)
       query.where('b.category.id IN (:...categoryIds)', {
         categoryIds: categories.map((category) => category.id),
       });
 
-    query
-      .having('a.id != :imageId', { imageId })
-      .groupBy('a.id')
-      .orderBy('COUNT(a.id)', 'DESC')
-      .addOrderBy('a.createdDate', 'DESC');
+    query.groupBy('a.id');
 
-    return query.getMany();
+    const count = await query.getCount();
+
+    const data = await query
+      .orderBy('imageCategoryCount', 'DESC')
+      .addOrderBy('a.baseTime.createdDate', 'DESC')
+      .limit(size)
+      .offset((page - 1) * size)
+      .getMany();
+
+    return { data, count };
   }
 
   async getRecommendRandomImages(

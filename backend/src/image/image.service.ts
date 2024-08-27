@@ -124,6 +124,22 @@ export class ImageService {
       return GetImageReplyDto.of(imageReply);
     });
 
+    await this.addUserImageHistory(image, user.id);
+
+    return GetImageDetailDto.of(image, image.user, imageReplyResponses);
+  }
+
+  async findImageWithSimilarCategories(
+    id: number,
+    size: number,
+    page: number,
+  ): Promise<GetImagesDto> {
+    this.validatePaginationParam(size, page);
+
+    const image =
+      await this.imageRepository.findImageWithUserWithImageCategory(id);
+    this.validateImage(image);
+
     const categories = await Promise.all(
       (
         await this.imageCategoryRepository.findOneWithCategory(
@@ -131,20 +147,15 @@ export class ImageService {
         )
       ).map((imageCategory) => imageCategory.category),
     );
-    const moreImages =
+    const { data, count } =
       await this.imageRepository.findImagesWithSimilarCategories(
         categories,
         id,
+        size,
+        page,
       );
 
-    await this.addUserImageHistory(image, user.id);
-
-    return GetImageDetailDto.of(
-      image,
-      image.user,
-      imageReplyResponses,
-      moreImages,
-    );
+    return GetImagesDto.of(data, this.getPaginationData(size, page, count));
   }
 
   async getMainImages(
@@ -154,7 +165,7 @@ export class ImageService {
     seed?: number,
   ): Promise<GetRandomImagesDto> {
     this.validateUser(user);
-    if (size <= 0 || page <= 0) throw new BadRequestException();
+    this.validatePaginationParam(size, page);
 
     const userImageHistories =
       await this.userImageHistoryRepository.findUserImageHistoriesWithImages(
@@ -183,18 +194,11 @@ export class ImageService {
       seed,
     );
 
-    const totalPage = Math.ceil(count / size);
-    if (totalPage < page) throw new BadRequestException();
-
-    const paginationData = new GetPaginationDataDto(
-      size,
-      page,
-      totalPage,
-      count,
-      page === totalPage,
+    return GetRandomImagesDto.of(
+      data,
+      this.getPaginationData(size, page, count),
+      seed,
     );
-
-    return GetRandomImagesDto.of(data, paginationData, seed);
   }
 
   async getSearchImages(
@@ -203,7 +207,7 @@ export class ImageService {
     page: number,
   ): Promise<GetImagesDto> {
     this.validateSearchString(searchStr);
-    if (size <= 0 || page <= 0) throw new BadRequestException();
+    this.validatePaginationParam(size, page);
 
     const categories =
       await this.categoryRepository.getCategoriesByCategoryName(searchStr);
@@ -215,18 +219,8 @@ export class ImageService {
         size,
         page,
       );
-    const totalPage = Math.ceil(count / size);
-    if (totalPage < page) throw new BadRequestException();
 
-    const paginationData = new GetPaginationDataDto(
-      size,
-      page,
-      totalPage,
-      count,
-      page === totalPage,
-    );
-
-    return GetImagesDto.of(data, paginationData);
+    return GetImagesDto.of(data, this.getPaginationData(size, page, count));
   }
 
   async addUserImageHistory(image: Image, userId: number): Promise<void> {
@@ -267,7 +261,28 @@ export class ImageService {
     }
   }
 
+  private validatePaginationParam(size: number, page: number) {
+    if (size <= 0 || page <= 0) throw new BadRequestException();
+  }
+
   private async deleteS3Image(image: Image): Promise<void> {
     await this.storageManager.deleteFile(image.key);
+  }
+
+  private getPaginationData(
+    size: number,
+    page: number,
+    count: number,
+  ): GetPaginationDataDto {
+    const totalPage = Math.ceil(count / size);
+    if (totalPage < page) throw new BadRequestException();
+
+    return new GetPaginationDataDto(
+      size,
+      page,
+      totalPage,
+      count,
+      page === totalPage,
+    );
   }
 }

@@ -57,6 +57,19 @@ export class ImageController {
     return await this.imageService.findImage(id, user);
   }
 
+  @Get('/similar-categories')
+  async findImageWithSimilarCategories(
+    @Query('id') id: number,
+    @Query('size') size: string,
+    @Query('page') page: string,
+  ): Promise<GetImagesDto> {
+    return await this.imageService.findImageWithSimilarCategories(
+      id,
+      Number.parseInt(size),
+      Number.parseInt(page),
+    );
+  }
+
   @Get('/search')
   async searchImage(
     @Query('search-word') searchWord: string,

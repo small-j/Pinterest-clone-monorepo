@@ -1,9 +1,16 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import ImagePinDetail from '../components/image/ImagePinDetail';
-import { useEffect, useState } from 'react';
-import { deleteImagePin, getImageDetails } from '../api/image.api';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  deleteImagePin,
+  getImageDetails,
+  getImageWithSimilarCategories,
+} from '../api/image.api';
 import { ErrorResponse, Response } from '../api/types/common.data.type';
-import { ImageDetailsInfo } from '../api/types/image.data.type';
+import {
+  ImageDetailsInfo,
+  SimilarCategoriesImage,
+} from '../api/types/image.data.type';
 import Loading from '../components/common/Loading';
 import {
   createSaveImage,
@@ -12,6 +19,7 @@ import {
 } from '../api/saveimage.api';
 import { SaveImageInfo } from '../api/types/saveimage.data.type';
 import ImagePinList from '../components/image/ImagePinList';
+import { commonValue } from '../common.value';
 
 function ImagePinDetailPage() {
   const param = useParams();
@@ -22,17 +30,21 @@ function ImagePinDetailPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [isSaved, setIsSaved] = useState(false);
   const [saveImage, setSaveImage] = useState<SaveImageInfo | null>(null);
-
-  const isErrorResponse = (
-    response: Response<ImageDetailsInfo> | ErrorResponse | undefined,
-  ): response is ErrorResponse => {
-    return !!response && response.success === false;
-  };
+  const [imageDatas, setImageDatas] = useState<
+    Response<SimilarCategoriesImage> | ErrorResponse
+  >();
+  const page = useRef<number>(1);
+  const [isFetching, setFetching] = useState(false);
+  const isLastPage = useMemo<boolean>(() => {
+    if (!imageDatas || !imageDatas.data) return true;
+    return imageDatas.data.paginationInfo.isLastPage;
+  }, [imageDatas]);
 
   useEffect(() => {
     checkParamValidation();
     getImageDeatilsData();
     getSaveImageData();
+    getSimilarCategoriesImages();
   }, [param.id]);
 
   const checkParamValidation = () => {
@@ -92,6 +104,38 @@ function ImagePinDetailPage() {
     });
   };
 
+  const getSimilarCategoriesImages = useCallback(() => {
+    if (!param.id) return;
+    if (!visualViewport) return;
+    const size = commonValue.IMAGE_DATA_PAGE_SIZE(visualViewport);
+    const callback = (
+      res: Response<SimilarCategoriesImage> | ErrorResponse,
+    ) => {
+      setImageDatas(res);
+      page.current = page.current + 1;
+      setFetching(false);
+    };
+
+    getImageWithSimilarCategories(
+      Number.parseInt(param.id),
+      { size, page: page.current },
+      callback,
+    );
+    setFetching(true);
+  }, [imageDatas]);
+
+  const isErrorResponse = (
+    response: Response<ImageDetailsInfo> | ErrorResponse | undefined,
+  ): response is ErrorResponse => {
+    return !!response && response.success === false;
+  };
+
+  const isErrorImagesResponse = (
+    response: Response<SimilarCategoriesImage> | ErrorResponse | undefined,
+  ): response is ErrorResponse => {
+    return !!response && response.success === false;
+  };
+
   return (
     <div className="flex flex-col items-center justify-center relative">
       {loading && (
@@ -110,16 +154,22 @@ function ImagePinDetailPage() {
           deleteSaveImage={requesToDeleteSaveImage}
         ></ImagePinDetail>
       )}
-      {imageDetails?.data?.imageDetails?.moreImages && imageDetails.data.imageDetails.moreImages.images.length > 0 && (
-        <>
-          <h3 className='mt-3 mb-1 text-[20px] font-medium'>더 찾아보기</h3>
-          <div className="flex flex-wrap justify-center">
-            <ImagePinList
-              imageDatas={imageDetails.data.imageDetails.moreImages}
-            ></ImagePinList>
-          </div>
-        </>
-      )}
+      {!isErrorImagesResponse(imageDatas) &&
+        imageDatas &&
+        imageDatas.success &&
+        imageDatas.data && (
+          <>
+            <h3 className="mt-3 mb-1 text-[20px] font-medium">더 찾아보기</h3>
+            <div className="flex flex-wrap justify-center">
+              <ImagePinList
+                imageDatas={imageDatas.data.imagePins}
+                fetchData={getSimilarCategoriesImages}
+                isFetching={isFetching}
+                isLastPage={isLastPage}
+              ></ImagePinList>
+            </div>
+          </>
+        )}
     </div>
   );
 }

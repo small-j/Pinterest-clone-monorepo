@@ -1,5 +1,5 @@
 import { validateCreateImageReply, validateImageReplyId, validateSaveImageInfo } from '../validator/reply.validator';
-import { commonValue } from './common.value';
+import { commonValue } from '../common.value';
 import { ErrorResponse, Response } from './types/common.data.type';
 import { CreateImageReply, ImageReplyInfo } from './types/reply.data.type';
 

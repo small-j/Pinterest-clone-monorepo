@@ -21,26 +21,41 @@ export class ImageRepository extends Repository<Image> {
   async findImagesWithSimilarCategories(
     categories: Category[],
     imageId: number,
-  ): Promise<Image[]> {
+    size: number,
+    page: number,
+  ): Promise<{ data: Image[]; count: number }> {
     const query = this.manager
       .createQueryBuilder(Image, 'a')
-      .innerJoin('a.imageCategories', 'b');
+      .innerJoin('a.imageCategories', 'b')
+      .select(['a', 'COUNT(a.id) as imageCategoryCount'])
+      .where('a.id != :imageId', { imageId });
 
     if (categories.length !== 0)
       query.where('b.category.id IN (:...categoryIds)', {
         categoryIds: categories.map((category) => category.id),
       });
 
-    query
-      .having('a.id != :imageId', { imageId })
-      .groupBy('a.id')
-      .orderBy('COUNT(a.id)', 'DESC')
-      .addOrderBy('a.createdDate', 'DESC');
+    query.groupBy('a.id');
 
-    return query.getMany();
+    const count = await query.getCount();
+
+    const data = await query
+      .orderBy('imageCategoryCount', 'DESC')
+      .addOrderBy('a.baseTime.createdDate', 'DESC')
+      .limit(size)
+      .offset((page - 1) * size)
+      .getMany();
+
+    return { data, count };
   }
 
-  async getRecommendRandomImages(categories: Category[]): Promise<Image[]> {
+  async getRecommendRandomImages(
+    categories: Category[],
+    size: number,
+    page: number,
+    seed: number,
+  ): Promise<{ data: Image[]; count: number }> {
+    await this.manager.query(`SELECT setseed(${seed});`);
     const query = this.manager
       .createQueryBuilder(Image, 'a')
       .innerJoin('a.imageCategories', 'b');
@@ -49,33 +64,48 @@ export class ImageRepository extends Repository<Image> {
       query.where('b.category.id IN (:...categoryIds)', {
         categoryIds: categories.map((imageCategory) => imageCategory.id),
       });
+    query.groupBy('a.id');
 
-    query.groupBy('a.id').orderBy('RANDOM()').limit(30); // TODO: 이게 30개인 이유는?
+    const count = await query.getCount();
 
-    return query.getMany();
+    query.addSelect('RANDOM()', 'random_order');
+    query.orderBy('random_order');
+
+    query.skip((page - 1) * size);
+    query.take(size);
+
+    const data = await query.getMany();
+
+    return { data, count };
   }
 
-  async getImageTitleOrContentRelationalImages(
+  async getImagesByTitleOrContentOrCategories(
     searchStr: string,
-  ): Promise<Image[]> {
-    return this.manager
-      .createQueryBuilder(Image, 'i')
-      .where('i.title LIKE :searchStr', { searchStr: `%${searchStr}%` })
-      .orWhere('i.content LIKE :searchStr', { searchStr: `%${searchStr}%` })
-      .orderBy('i.createdDate', 'DESC')
-      .getMany();
-  }
-
-  async getCategoryRelationalImages(categories: Category[]): Promise<Image[]> {
+    categories: Category[],
+    size: number,
+    page: number,
+  ): Promise<{ data: Image[]; count: number }> {
     const query = this.manager
       .createQueryBuilder(Image, 'i')
-      .innerJoin('i.imageCategories', 'ic');
+      .innerJoin('i.imageCategories', 'ic')
+      .where('i.title LIKE :searchStr', { searchStr: `%${searchStr}%` })
+      .orWhere('i.content LIKE :searchStr', { searchStr: `%${searchStr}%` });
 
     if (categories.length !== 0)
-      query.where('ic.category.id IN (:...categoryIds)', {
+      query.orWhere('ic.category.id IN (:...categoryIds)', {
         categoryIds: categories.map((category) => category.id),
       });
 
-    return query.groupBy('i.id').orderBy('i.createdDate', 'ASC').getMany();
+    query.groupBy('i.id');
+
+    const count = await query.getCount();
+
+    const data = await query
+      .orderBy('i.baseTime.createdDate', 'DESC')
+      .limit(size)
+      .offset((page - 1) * size)
+      .getMany();
+
+    return { data, count };
   }
 }

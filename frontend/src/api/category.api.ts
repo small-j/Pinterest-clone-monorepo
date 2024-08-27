@@ -1,4 +1,4 @@
-import { commonValue } from './common.value';
+import { commonValue } from '../common.value';
 import { CategoryInfo } from './types/category.data.type';
 import { ErrorResponse, Response } from './types/common.data.type';
 

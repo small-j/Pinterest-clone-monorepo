@@ -19,6 +19,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { RolesGuard } from 'src/guard/roles-guard';
 import { AuthUser } from 'src/decorator/auth-user.decorator';
 import { User } from 'src/user/entities/user.entity';
+import { GetImagesDto } from './dto/get-images.dto';
+import { GetRandomImagesDto } from './dto/get-random-images.dto';
 
 @Controller('image')
 export class ImageController {
@@ -55,15 +57,44 @@ export class ImageController {
     return await this.imageService.findImage(id, user);
   }
 
+  @Get('/similar-categories')
+  async findImageWithSimilarCategories(
+    @Query('id') id: number,
+    @Query('size') size: string,
+    @Query('page') page: string,
+  ): Promise<GetImagesDto> {
+    return await this.imageService.findImageWithSimilarCategories(
+      id,
+      Number.parseInt(size),
+      Number.parseInt(page),
+    );
+  }
+
   @Get('/search')
   async searchImage(
     @Query('search-word') searchWord: string,
-  ): Promise<GetImageDto[]> {
-    return await this.imageService.getSearchImages(searchWord);
+    @Query('size') size: string,
+    @Query('page') page: string,
+  ): Promise<GetImagesDto> {
+    return await this.imageService.getSearchImages(
+      searchWord,
+      Number.parseInt(size),
+      Number.parseInt(page),
+    );
   }
 
   @Get('/main')
-  async mainImage(@AuthUser() user: User): Promise<GetImageDto[]> {
-    return await this.imageService.getMainImages(user);
+  async mainImage(
+    @AuthUser() user: User,
+    @Query('size') size: string,
+    @Query('page') page: string,
+    @Query('seed') seed?: string,
+  ): Promise<GetRandomImagesDto> {
+    return await this.imageService.getMainImages(
+      user,
+      Number.parseInt(size),
+      Number.parseInt(page),
+      Number.parseFloat(seed),
+    );
   }
 }

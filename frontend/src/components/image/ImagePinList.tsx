@@ -1,28 +1,52 @@
 import ImagePin from './ImagePin';
 import { ImagePins } from '@/src/api/types/image.data.type';
 import EmptyImagePin from './EmptyImagePin';
-import { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 
 interface Props {
   imageDatas: ImagePins;
   fetchData: () => void;
-  isCanFetchData: () => boolean;
+  isLastPage: boolean;
+  isFetching: boolean;
 }
 
-function ImagePinList({ imageDatas, fetchData, isCanFetchData }: Props) {
-  const [isIntersect, setIsIntersect] = useState<boolean>(false);
+function ImagePinList({
+  imageDatas,
+  fetchData,
+  isLastPage,
+  isFetching,
+}: Props) {
   const [images, setImages] = useState<ReactNode[]>([]);
   const imagePinRef = useRef<HTMLDivElement | null>(null);
-
-  const callback: IntersectionObserverCallback = useCallback((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) setIsIntersect(true);
-    });
-  }, []);
   const options: IntersectionObserverInit = {
     rootMargin: '0px',
     threshold: 0.5,
   };
+  const callback: IntersectionObserverCallback = useCallback((entries, observer) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        if (isLastPage) {
+          observer.unobserve(entry.target);
+        }
+        if (!isLastPage && !isFetching) fetchData();
+      }
+    });
+  }, [isLastPage, isFetching]);
+
+  useEffect(() => {
+    if (!imagePinRef.current) return;
+
+    const observer = new IntersectionObserver(callback, options);
+    observer.observe(imagePinRef.current);
+
+    return () => observer.disconnect();
+  }, [imagePinRef, callback]);
 
   useEffect(() => {
     if (!imageDatas) return;
@@ -37,24 +61,6 @@ function ImagePinList({ imageDatas, fetchData, isCanFetchData }: Props) {
 
     setImages([...images, ...newImages]);
   }, [imageDatas]);
-
-  useEffect(() => {
-    return () => setImages([]);
-  }, []);
-
-  useEffect(() => {
-    if (!imagePinRef.current) return;
-    const observer = new IntersectionObserver(callback, options);
-    observer.observe(imagePinRef.current);
-    return () => observer.disconnect();
-  }, [callback, imagePinRef]);
-
-  useEffect(() => {
-    if (isIntersect && isCanFetchData()) {
-      fetchData();
-      setIsIntersect(false);
-    }
-  }, [isIntersect]);
 
   return (
     <>

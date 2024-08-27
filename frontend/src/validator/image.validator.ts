@@ -8,6 +8,7 @@ import {
   MainImage,
   SearchImage,
 } from '../api/types/image.data.type';
+import { PaginationParams } from '../api/types/common.data.type';
 
 const ignoreCharsRegex = '^[^\'";<>\\[\\](){}^$|?*+\\\\`&%#~]*$';
 
@@ -39,22 +40,73 @@ export function validateSearchWord(id: string) {
   }
 }
 
+const paginationSchema = {
+  type: 'object',
+  properties: {
+    size: { type: 'integer', nullable: false },
+    page: { type: 'integer', nullable: false },
+  },
+  required: ['size', 'page'],
+};
+
+export function validatePaginationParams(param: PaginationParams) {
+  const validate = commonValue.AJV.compile(paginationSchema);
+  const valid = validate(param);
+  if (!valid) {
+    throw new Error('Invalid page param');
+  }
+}
+
+const seedSchema = {
+  type: 'number',
+  nullable: false,
+};
+
+export function validateSeedParams(param: number) {
+  const validate = commonValue.AJV.compile(seedSchema);
+  const valid = validate(param);
+  if (!valid) {
+    throw new Error('Invalid seed param');
+  }
+}
+
 const mainImageSchema: JSONSchemaType<MainImage> = {
   type: 'object',
   properties: {
-    images: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          id: { type: 'integer', nullable: false },
-          url: { type: 'string', format: 'uri', nullable: false },
-        },
-        required: ['id', 'url'],
+    paginationInfo: {
+      type: 'object',
+      properties: {
+        size: { type: 'integer', nullable: false },
+        page: { type: 'integer', nullable: false },
+        totalPage: { type: 'integer', nullable: false },
+        totalCount: { type: 'integer', nullable: false },
+        isLastPage: { type: 'boolean', nullable: false },
       },
+      required: ['size', 'page', 'totalPage', 'totalCount', 'isLastPage'],
     },
+    imagePins: {
+      type: 'object',
+      properties: {
+        images: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'integer', nullable: false },
+              url: { type: 'string', format: 'uri', nullable: false },
+            },
+            required: ['id', 'url'],
+          },
+        },
+      },
+      required: ['images'],
+    },
+    seed: {
+      type: 'number',
+      nullable: false,
+    }
   },
-  required: ['images'],
+  required: ['paginationInfo', 'imagePins', 'seed'],
 };
 
 export function validateMainImageInfo(response: MainImage) {

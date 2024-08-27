@@ -1,5 +1,5 @@
 import { JSONSchemaType, ValidateFunction } from 'ajv';
-import { commonValue } from '../api/common.value';
+import { commonValue } from '../common.value';
 import {
   JoinInfo,
   LoginInfo,

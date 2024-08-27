@@ -1,5 +1,5 @@
 import { createContext, ReactNode, useContext, useState } from 'react';
-import { commonValue } from '../api/common.value';
+import { commonValue } from '../common.value';
 import { LoginUserInfo } from '../api/types/auth.data.type';
 
 interface Props {

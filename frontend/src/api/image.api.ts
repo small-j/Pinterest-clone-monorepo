@@ -10,7 +10,7 @@ import {
   validateSearchWord,
   validateSeedParams,
 } from '../validator/image.validator';
-import { commonValue } from './common.value';
+import { commonValue } from '../common.value';
 import {
   ErrorResponse,
   PaginationParams,

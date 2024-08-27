@@ -1,5 +1,5 @@
 import { JSONSchemaType } from 'ajv';
-import { commonValue } from '../api/common.value';
+import { commonValue } from '../common.value';
 import { CreateImageReply, ImageReplyInfo } from '../api/types/reply.data.type';
 
 const idSchema = {

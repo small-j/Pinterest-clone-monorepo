@@ -1,5 +1,5 @@
 import { validateJoinInfo, validateLoginInfo, validateLoginUserInfo, validateUserId } from '../validator/auth.validator';
-import { commonValue } from './common.value';
+import { commonValue } from '../common.value';
 import { JoinInfo, LoginInfo, LoginUserInfo } from './types/auth.data.type';
 import { ErrorResponse, Response } from './types/common.data.type';
 

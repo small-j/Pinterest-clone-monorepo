@@ -19,7 +19,10 @@ export interface MainImage {
   paginationInfo: PaginationInfo;
   seed: number;
 }
-export type SearchImage = ImagePins;
+export type SearchImage = {
+  imagePins: ImagePins;
+  paginationInfo: PaginationInfo;
+}
 
 export interface FileInfo {
   fileMetaData: {

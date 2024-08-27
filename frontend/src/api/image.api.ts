@@ -40,7 +40,16 @@ type MainImageResponse = {
   images: { id: number; url: string }[];
   seed: number;
 };
-type SearchImageResponse = { id: number; url: string }[];
+type SearchImageResponse = {
+  paginationData: {
+    size: number;
+    page: number;
+    totalPage: number;
+    totalCount: number;
+    isLastPage: boolean;
+  };
+  images: { id: number; url: string }[];
+};
 type FileInfoResponse = { key: string; url: string };
 type ImageDetailsResponse = {
   id: number;
@@ -95,13 +104,17 @@ export async function getMainImages(
 }
 
 export async function getSearchImages(
+  paginationParams: PaginationParams,
   searchWord: string,
   callback: ResponseCallback<SearchImage>,
 ) {
   validateSearchWord(searchWord);
+  validatePaginationParams(paginationParams);
 
   try {
     const params = new URLSearchParams({
+      size: paginationParams.size.toString(),
+      page: paginationParams.page.toString(),
       'search-word': searchWord,
     }).toString();
     const url = `${commonValue.ORIGIN}${PREFIX_URL}/search?${params}`;
@@ -294,10 +307,19 @@ function searchImageDataAdaptor(
   res: SearchImageResponse,
 ): Response<SearchImage> {
   const data = {
-    images: res.map((d) => ({
-      id: d.id,
-      url: d.url,
-    })),
+    paginationInfo: {
+      size: res.paginationData.size,
+      page: res.paginationData.page,
+      totalPage: res.paginationData.totalPage,
+      totalCount: res.paginationData.totalCount,
+      isLastPage: res.paginationData.isLastPage,
+    },
+    imagePins: {
+      images: res.images.map((d) => ({
+        id: d.id,
+        url: d.url,
+      })),
+    },
   };
   validateSearchImageInfo(data);
 

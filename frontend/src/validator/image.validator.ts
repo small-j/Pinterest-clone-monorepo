@@ -104,7 +104,7 @@ const mainImageSchema: JSONSchemaType<MainImage> = {
     seed: {
       type: 'number',
       nullable: false,
-    }
+    },
   },
   required: ['paginationInfo', 'imagePins', 'seed'],
 };
@@ -121,19 +121,36 @@ export function validateMainImageInfo(response: MainImage) {
 const searchImageSchema: JSONSchemaType<SearchImage> = {
   type: 'object',
   properties: {
-    images: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          id: { type: 'integer', nullable: false },
-          url: { type: 'string', format: 'uri', nullable: false },
-        },
-        required: ['id', 'url'],
+    paginationInfo: {
+      type: 'object',
+      properties: {
+        size: { type: 'integer', nullable: false },
+        page: { type: 'integer', nullable: false },
+        totalPage: { type: 'integer', nullable: false },
+        totalCount: { type: 'integer', nullable: false },
+        isLastPage: { type: 'boolean', nullable: false },
       },
+      required: ['size', 'page', 'totalPage', 'totalCount', 'isLastPage'],
+    },
+    imagePins: {
+      type: 'object',
+      properties: {
+        images: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'integer', nullable: false },
+              url: { type: 'string', format: 'uri', nullable: false },
+            },
+            required: ['id', 'url'],
+          },
+        },
+      },
+      required: ['images'],
     },
   },
-  required: ['images'],
+  required: ['paginationInfo', 'imagePins'],
 };
 
 export function validateSearchImageInfo(response: SearchImage) {

@@ -27,6 +27,7 @@ import { FindImageRepliesWithUserByImageHelperRepository } from 'src/image-reply
 import { GetImagesDto } from './dto/get-images.dto';
 import { GetPaginationDataDto } from './dto/get-pagination-data.dto';
 import { GetRandomImagesDto } from './dto/get-random-images.dto';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class ImageService {

@@ -70,27 +70,33 @@ export class ImageRepository extends Repository<Image> {
     return { data, count };
   }
 
-  async getImageTitleOrContentRelationalImages(
+  async getImagesByTitleOrContentOrCategories(
     searchStr: string,
-  ): Promise<Image[]> {
-    return this.manager
-      .createQueryBuilder(Image, 'i')
-      .where('i.title LIKE :searchStr', { searchStr: `%${searchStr}%` })
-      .orWhere('i.content LIKE :searchStr', { searchStr: `%${searchStr}%` })
-      .orderBy('i.createdDate', 'DESC')
-      .getMany();
-  }
-
-  async getCategoryRelationalImages(categories: Category[]): Promise<Image[]> {
+    categories: Category[],
+    size: number,
+    page: number,
+  ): Promise<{ data: Image[]; count: number }> {
     const query = this.manager
       .createQueryBuilder(Image, 'i')
-      .innerJoin('i.imageCategories', 'ic');
+      .innerJoin('i.imageCategories', 'ic')
+      .where('i.title LIKE :searchStr', { searchStr: `%${searchStr}%` })
+      .orWhere('i.content LIKE :searchStr', { searchStr: `%${searchStr}%` });
 
     if (categories.length !== 0)
-      query.where('ic.category.id IN (:...categoryIds)', {
+      query.orWhere('ic.category.id IN (:...categoryIds)', {
         categoryIds: categories.map((category) => category.id),
       });
 
-    return query.groupBy('i.id').orderBy('i.createdDate', 'ASC').getMany();
+    query.groupBy('i.id');
+
+    const count = await query.getCount();
+
+    const data = await query
+      .orderBy('i.baseTime.createdDate', 'DESC')
+      .limit(size)
+      .offset((page - 1) * size)
+      .getMany();
+
+    return { data, count };
   }
 }

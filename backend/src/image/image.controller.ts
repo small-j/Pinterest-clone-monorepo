@@ -20,6 +20,7 @@ import { RolesGuard } from 'src/guard/roles-guard';
 import { AuthUser } from 'src/decorator/auth-user.decorator';
 import { User } from 'src/user/entities/user.entity';
 import { GetImagesDto } from './dto/get-images.dto';
+import { GetRandomImagesDto } from './dto/get-random-images.dto';
 
 @Controller('image')
 export class ImageController {
@@ -59,8 +60,14 @@ export class ImageController {
   @Get('/search')
   async searchImage(
     @Query('search-word') searchWord: string,
-  ): Promise<GetImageDto[]> {
-    return await this.imageService.getSearchImages(searchWord);
+    @Query('size') size: string,
+    @Query('page') page: string,
+  ): Promise<GetImagesDto> {
+    return await this.imageService.getSearchImages(
+      searchWord,
+      Number.parseInt(size),
+      Number.parseInt(page),
+    );
   }
 
   @Get('/main')
@@ -69,7 +76,7 @@ export class ImageController {
     @Query('size') size: string,
     @Query('page') page: string,
     @Query('seed') seed?: string,
-  ): Promise<GetImagesDto> {
+  ): Promise<GetRandomImagesDto> {
     return await this.imageService.getMainImages(
       user,
       Number.parseInt(size),

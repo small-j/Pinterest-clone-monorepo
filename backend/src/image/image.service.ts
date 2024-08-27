@@ -26,6 +26,7 @@ import { CustomStorageManager } from 'src/storage/storage-manager.interface';
 import { FindImageRepliesWithUserByImageHelperRepository } from 'src/image-reply-helper/image-reply-helper.repository';
 import { GetImagesDto } from './dto/get-images.dto';
 import { GetPaginationDataDto } from './dto/get-pagination-data.dto';
+import { GetRandomImagesDto } from './dto/get-random-images.dto';
 
 @Injectable()
 export class ImageService {
@@ -151,7 +152,7 @@ export class ImageService {
     size: number,
     page: number,
     seed?: number,
-  ): Promise<GetImagesDto> {
+  ): Promise<GetRandomImagesDto> {
     this.validateUser(user);
     if (size <= 0 || page <= 0) throw new BadRequestException();
 
@@ -193,22 +194,39 @@ export class ImageService {
       page === totalPage,
     );
 
-    return GetImagesDto.of(data, paginationData, seed);
+    return GetRandomImagesDto.of(data, paginationData, seed);
   }
 
-  async getSearchImages(searchStr: string): Promise<GetImageDto[]> {
+  async getSearchImages(
+    searchStr: string,
+    size: number,
+    page: number,
+  ): Promise<GetImagesDto> {
     this.validateSearchString(searchStr);
+    if (size <= 0 || page <= 0) throw new BadRequestException();
 
     const categories =
       await this.categoryRepository.getCategoriesByCategoryName(searchStr);
 
-    const result =
+    const { data, count } =
       await this.imageRepository.getImagesByTitleOrContentOrCategories(
         searchStr,
         categories,
+        size,
+        page,
       );
+    const totalPage = Math.ceil(count / size);
+    if (totalPage < page) throw new BadRequestException();
 
-    return GetImageDto.of(result);
+    const paginationData = new GetPaginationDataDto(
+      size,
+      page,
+      totalPage,
+      count,
+      page === totalPage,
+    );
+
+    return GetImagesDto.of(data, paginationData);
   }
 
   async addUserImageHistory(image: Image, userId: number): Promise<void> {
@@ -251,17 +269,5 @@ export class ImageService {
 
   private async deleteS3Image(image: Image): Promise<void> {
     await this.storageManager.deleteFile(image.key);
-  }
-
-  private combineList(a: Image[], b: Image[]): Image[] {
-    const result = new Map<number, Image>();
-
-    a.concat(b).forEach((image) => {
-      if (!result.has(image.id)) {
-        result.set(image.id, image);
-      }
-    });
-
-    return Array.from(result.values());
   }
 }

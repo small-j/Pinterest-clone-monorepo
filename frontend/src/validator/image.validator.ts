@@ -7,6 +7,7 @@ import {
   ImagePin,
   MainImage,
   SearchImage,
+  SimilarCategoriesImage,
 } from '../api/types/image.data.type';
 import { PaginationParams } from '../api/types/common.data.type';
 
@@ -162,6 +163,50 @@ export function validateSearchImageInfo(response: SearchImage) {
   }
 }
 
+const similarCategoriesImageSchema: JSONSchemaType<SimilarCategoriesImage> = {
+  type: 'object',
+  properties: {
+    paginationInfo: {
+      type: 'object',
+      properties: {
+        size: { type: 'integer', nullable: false },
+        page: { type: 'integer', nullable: false },
+        totalPage: { type: 'integer', nullable: false },
+        totalCount: { type: 'integer', nullable: false },
+        isLastPage: { type: 'boolean', nullable: false },
+      },
+      required: ['size', 'page', 'totalPage', 'totalCount', 'isLastPage'],
+    },
+    imagePins: {
+      type: 'object',
+      properties: {
+        images: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'integer', nullable: false },
+              url: { type: 'string', format: 'uri', nullable: false },
+            },
+            required: ['id', 'url'],
+          },
+        },
+      },
+      required: ['images'],
+    },
+  },
+  required: ['paginationInfo', 'imagePins'],
+};
+
+export function validateSimilarCategoriesImageInfo(response: SimilarCategoriesImage) {
+  const validate = commonValue.AJV.compile(similarCategoriesImageSchema);
+  const valid = validate(response);
+  if (!valid) {
+    console.error(validate.errors);
+    throw new Error('Invalid response format');
+  }
+}
+
 const imageDetailSchema: JSONSchemaType<ImageDetailsInfo> = {
   type: 'object',
   properties: {
@@ -188,23 +233,6 @@ const imageDetailSchema: JSONSchemaType<ImageDetailsInfo> = {
             required: ['id', 'content', 'userId', 'userName'],
           },
         },
-        moreImages: {
-          type: 'object',
-          properties: {
-            images: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  id: { type: 'integer', nullable: false },
-                  url: { type: 'string', format: 'uri', nullable: false },
-                },
-                required: ['id', 'url'],
-              },
-            },
-          },
-          required: ['images'],
-        },
       },
       required: [
         'id',
@@ -215,7 +243,6 @@ const imageDetailSchema: JSONSchemaType<ImageDetailsInfo> = {
         'userName',
         'userEmail',
         'replies',
-        'moreImages',
       ],
     },
   },

@@ -9,6 +9,7 @@ import {
   validateSearchImageInfo,
   validateSearchWord,
   validateSeedParams,
+  validateSimilarCategoriesImageInfo,
 } from '../validator/image.validator';
 import { commonValue } from '../common.value';
 import {
@@ -24,6 +25,7 @@ import {
   SearchImage,
   ImagePin,
   ImageDetailsInfo,
+  SimilarCategoriesImage,
 } from './types/image.data.type';
 
 const PREFIX_URL = '/image';
@@ -60,7 +62,16 @@ type ImageDetailsResponse = {
   userName: string;
   userEmail: string;
   imageReplies: ImageReplyResponse[];
-  moreImages: MoreImageResponse;
+};
+type SimilarCategoriesImageResponse = {
+  paginationData: {
+    size: number;
+    page: number;
+    totalPage: number;
+    totalCount: number;
+    isLastPage: boolean;
+  };
+  images: { id: number; url: string }[];
 };
 type ImageReplyResponse = {
   replyId: number;
@@ -68,7 +79,6 @@ type ImageReplyResponse = {
   userId: number;
   userName?: string;
 };
-type MoreImageResponse = { id: number; url: string }[];
 
 export async function getMainImages(
   paginationParams: PaginationParams,
@@ -162,6 +172,42 @@ export async function getImageDetails(
     callback({
       data: null,
       errorMessage: '이미지 세부 정보 로드 실패',
+      success: false,
+    });
+  }
+}
+
+export async function getImageWithSimilarCategories(
+  id: number,
+  paginationParams: PaginationParams,
+  callback: ResponseCallback<SimilarCategoriesImage>,
+) {
+  validateImageId(id);
+  validatePaginationParams(paginationParams);
+
+  try {
+    const params = new URLSearchParams({
+      id: id.toString(),
+      size: paginationParams.size.toString(),
+      page: paginationParams.page.toString(),
+    }).toString();
+    const url = `${commonValue.ORIGIN}${PREFIX_URL}/similar-categories?${params}`;
+    const result = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        [commonValue.TOKEN_HEADER]: commonValue.ACCESS_TOKEN,
+      },
+      credentials: 'include',
+    }).then((res) => {
+      if (!res.ok) throw new Error();
+      return res.json();
+    });
+
+    callback(similarCategoriesImageDataAdaptor(result));
+  } catch {
+    callback({
+      data: null,
+      errorMessage: '유사 카테고리 이미지 로드 실패',
       success: false,
     });
   }
@@ -362,15 +408,35 @@ function imageDetailsDataAdaptor(
         userId: reply.userId,
         userName: !reply.userName ? '' : reply.userName,
       })),
-      moreImages: {
-        images: res.moreImages.map((image) => ({
-          id: image.id,
-          url: image.url,
-        })),
-      },
     },
   };
   validateImageDetailInfo(data);
+
+  return {
+    data,
+    success: true,
+  };
+}
+
+function similarCategoriesImageDataAdaptor(
+  res: SimilarCategoriesImageResponse,
+): Response<SimilarCategoriesImage> {
+  const data = {
+    paginationInfo: {
+      size: res.paginationData.size,
+      page: res.paginationData.page,
+      totalPage: res.paginationData.totalPage,
+      totalCount: res.paginationData.totalCount,
+      isLastPage: res.paginationData.isLastPage,
+    },
+    imagePins: {
+      images: res.images.map((d) => ({
+        id: d.id,
+        url: d.url,
+      })),
+    },
+  };
+  validateSimilarCategoriesImageInfo(data);
 
   return {
     data,

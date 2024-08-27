@@ -23,6 +23,10 @@ export type SearchImage = {
   imagePins: ImagePins;
   paginationInfo: PaginationInfo;
 }
+export type SimilarCategoriesImage = {
+  imagePins: ImagePins;
+  paginationInfo: PaginationInfo;
+}
 
 export interface FileInfo {
   fileMetaData: {
@@ -49,6 +53,5 @@ export interface ImageDetailsInfo {
     userName: string;
     userEmail: string;
     replies: ImageReplyInfo[];
-    moreImages: ImagePins;
   };
 }

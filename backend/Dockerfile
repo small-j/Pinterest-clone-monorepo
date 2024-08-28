@@ -1,4 +1,4 @@
-FROM node:16 as builder
+FROM node:20 as builder
 
 WORKDIR /app
 
@@ -12,7 +12,7 @@ EXPOSE 3000
 
 RUN npm run build
 
-FROM node:16-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 

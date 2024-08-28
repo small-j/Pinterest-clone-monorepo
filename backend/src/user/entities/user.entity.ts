@@ -4,7 +4,7 @@ import { UserImageHistory } from 'src/user-image-history/entities/user-image-his
 import { SaveImage } from 'src/save-image/entities/save-image.entity';
 import { BaseTime } from 'src/common/entities/base-time';
 
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 
 @Entity({ name: 'users' })
 export class User {

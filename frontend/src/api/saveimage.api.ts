@@ -4,7 +4,7 @@ import {
   validateSaveImageId,
   validateSaveImageInfo,
 } from '../validator/saveimage.validator';
-import { commonValue } from './common.value';
+import { commonValue } from '../common.value';
 import { ErrorResponse, Response } from './types/common.data.type';
 import {
   SaveImageDeleteInfo,

@@ -1,4 +1,4 @@
-FROM node
+FROM node:20 as builder
 
 WORKDIR /app
 
@@ -10,4 +10,12 @@ COPY . .
 
 EXPOSE 3000
 
-CMD ["npm", "run", "start"]
+RUN npm run build
+
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY --from=builder /app ./
+
+CMD ["npm", "run", "start:prod"]

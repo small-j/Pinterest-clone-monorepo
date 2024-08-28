@@ -1,5 +1,5 @@
 import { JSONSchemaType } from 'ajv';
-import { commonValue } from '../api/common.value';
+import { commonValue } from '../common.value';
 import { CategoryInfo } from '../api/types/category.data.type';
 
 const categoryInfoSchema: JSONSchemaType<CategoryInfo[]> = {

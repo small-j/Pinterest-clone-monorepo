@@ -5,12 +5,16 @@ import {
   validateImageId,
   validateImagePinInfo,
   validateMainImageInfo,
+  validatePaginationParams,
   validateSearchImageInfo,
   validateSearchWord,
+  validateSeedParams,
+  validateSimilarCategoriesImageInfo,
 } from '../validator/image.validator';
-import { commonValue } from './common.value';
+import { commonValue } from '../common.value';
 import {
   ErrorResponse,
+  PaginationParams,
   Response,
   ResponseCallback,
 } from './types/common.data.type';
@@ -21,13 +25,33 @@ import {
   SearchImage,
   ImagePin,
   ImageDetailsInfo,
+  SimilarCategoriesImage,
 } from './types/image.data.type';
 
 const PREFIX_URL = '/image';
 
 type ImagePinResponse = { id: number; url: string };
-type MainImageResponse = { id: number; url: string }[];
-type SearchImageResponse = { id: number; url: string }[];
+type MainImageResponse = {
+  paginationData: {
+    size: number;
+    page: number;
+    totalPage: number;
+    totalCount: number;
+    isLastPage: boolean;
+  };
+  images: { id: number; url: string }[];
+  seed: number;
+};
+type SearchImageResponse = {
+  paginationData: {
+    size: number;
+    page: number;
+    totalPage: number;
+    totalCount: number;
+    isLastPage: boolean;
+  };
+  images: { id: number; url: string }[];
+};
 type FileInfoResponse = { key: string; url: string };
 type ImageDetailsResponse = {
   id: number;
@@ -38,7 +62,16 @@ type ImageDetailsResponse = {
   userName: string;
   userEmail: string;
   imageReplies: ImageReplyResponse[];
-  moreImages: MoreImageResponse;
+};
+type SimilarCategoriesImageResponse = {
+  paginationData: {
+    size: number;
+    page: number;
+    totalPage: number;
+    totalCount: number;
+    isLastPage: boolean;
+  };
+  images: { id: number; url: string }[];
 };
 type ImageReplyResponse = {
   replyId: number;
@@ -46,13 +79,24 @@ type ImageReplyResponse = {
   userId: number;
   userName?: string;
 };
-type MoreImageResponse = { id: number; url: string }[];
 
 export async function getMainImages(
+  paginationParams: PaginationParams,
   callback: (data: Response<MainImage> | ErrorResponse) => void,
+  seed?: number,
 ) {
+  validatePaginationParams(paginationParams);
+  if (seed) validateSeedParams(seed);
+
   try {
-    const result = await fetch(`${commonValue.ORIGIN}${PREFIX_URL}/main`, {
+    const params = new URLSearchParams({
+      size: paginationParams.size.toString(),
+      page: paginationParams.page.toString(),
+    });
+    if (seed) params.set('seed', seed.toString());
+
+    const url = `${commonValue.ORIGIN}${PREFIX_URL}/main?${params.toString()}`;
+    const result = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
         [commonValue.TOKEN_HEADER]: commonValue.ACCESS_TOKEN,
@@ -70,13 +114,17 @@ export async function getMainImages(
 }
 
 export async function getSearchImages(
+  paginationParams: PaginationParams,
   searchWord: string,
   callback: ResponseCallback<SearchImage>,
 ) {
   validateSearchWord(searchWord);
+  validatePaginationParams(paginationParams);
 
   try {
     const params = new URLSearchParams({
+      size: paginationParams.size.toString(),
+      page: paginationParams.page.toString(),
       'search-word': searchWord,
     }).toString();
     const url = `${commonValue.ORIGIN}${PREFIX_URL}/search?${params}`;
@@ -124,6 +172,42 @@ export async function getImageDetails(
     callback({
       data: null,
       errorMessage: '이미지 세부 정보 로드 실패',
+      success: false,
+    });
+  }
+}
+
+export async function getImageWithSimilarCategories(
+  id: number,
+  paginationParams: PaginationParams,
+  callback: ResponseCallback<SimilarCategoriesImage>,
+) {
+  validateImageId(id);
+  validatePaginationParams(paginationParams);
+
+  try {
+    const params = new URLSearchParams({
+      id: id.toString(),
+      size: paginationParams.size.toString(),
+      page: paginationParams.page.toString(),
+    }).toString();
+    const url = `${commonValue.ORIGIN}${PREFIX_URL}/similar-categories?${params}`;
+    const result = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        [commonValue.TOKEN_HEADER]: commonValue.ACCESS_TOKEN,
+      },
+      credentials: 'include',
+    }).then((res) => {
+      if (!res.ok) throw new Error();
+      return res.json();
+    });
+
+    callback(similarCategoriesImageDataAdaptor(result));
+  } catch {
+    callback({
+      data: null,
+      errorMessage: '유사 카테고리 이미지 로드 실패',
       success: false,
     });
   }
@@ -242,10 +326,20 @@ function imagePinDataAdaptor(res: ImagePinResponse): Response<ImagePin> {
 
 function mainImageDataAdaptor(res: MainImageResponse): Response<MainImage> {
   const data = {
-    images: res.map((d) => ({
-      id: d.id,
-      url: d.url,
-    })),
+    paginationInfo: {
+      size: res.paginationData.size,
+      page: res.paginationData.page,
+      totalPage: res.paginationData.totalPage,
+      totalCount: res.paginationData.totalCount,
+      isLastPage: res.paginationData.isLastPage,
+    },
+    imagePins: {
+      images: res.images.map((d) => ({
+        id: d.id,
+        url: d.url,
+      })),
+    },
+    seed: res.seed,
   };
   validateMainImageInfo(data);
 
@@ -259,10 +353,19 @@ function searchImageDataAdaptor(
   res: SearchImageResponse,
 ): Response<SearchImage> {
   const data = {
-    images: res.map((d) => ({
-      id: d.id,
-      url: d.url,
-    })),
+    paginationInfo: {
+      size: res.paginationData.size,
+      page: res.paginationData.page,
+      totalPage: res.paginationData.totalPage,
+      totalCount: res.paginationData.totalCount,
+      isLastPage: res.paginationData.isLastPage,
+    },
+    imagePins: {
+      images: res.images.map((d) => ({
+        id: d.id,
+        url: d.url,
+      })),
+    },
   };
   validateSearchImageInfo(data);
 
@@ -305,15 +408,35 @@ function imageDetailsDataAdaptor(
         userId: reply.userId,
         userName: !reply.userName ? '' : reply.userName,
       })),
-      moreImages: {
-        images: res.moreImages.map((image) => ({
-          id: image.id,
-          url: image.url,
-        })),
-      },
     },
   };
   validateImageDetailInfo(data);
+
+  return {
+    data,
+    success: true,
+  };
+}
+
+function similarCategoriesImageDataAdaptor(
+  res: SimilarCategoriesImageResponse,
+): Response<SimilarCategoriesImage> {
+  const data = {
+    paginationInfo: {
+      size: res.paginationData.size,
+      page: res.paginationData.page,
+      totalPage: res.paginationData.totalPage,
+      totalCount: res.paginationData.totalCount,
+      isLastPage: res.paginationData.isLastPage,
+    },
+    imagePins: {
+      images: res.images.map((d) => ({
+        id: d.id,
+        url: d.url,
+      })),
+    },
+  };
+  validateSimilarCategoriesImageInfo(data);
 
   return {
     data,

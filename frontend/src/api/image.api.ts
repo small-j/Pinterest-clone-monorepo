@@ -6,7 +6,6 @@ import {
   validateImagePinInfo,
   validateMainImageInfo,
   validatePaginationParams,
-  validateSearchImageInfo,
   validateSearchWord,
   validateSeedParams,
   validateSimilarCategoriesImageInfo,
@@ -116,32 +115,33 @@ export async function getMainImages(
 export async function getSearchImages(
   paginationParams: PaginationParams,
   searchWord: string,
-  callback: ResponseCallback<SearchImage>,
-) {
-  validateSearchWord(searchWord);
-  validatePaginationParams(paginationParams);
-
+): Promise<SearchImageResponse> {
+  
   try {
+    validateSearchWord(searchWord);
+    validatePaginationParams(paginationParams);
+
     const params = new URLSearchParams({
       size: paginationParams.size.toString(),
       page: paginationParams.page.toString(),
       'search-word': searchWord,
     }).toString();
     const url = `${commonValue.ORIGIN}${PREFIX_URL}/search?${params}`;
-    const result = await fetch(url, {
+
+    return await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
         [commonValue.TOKEN_HEADER]: commonValue.ACCESS_TOKEN,
       },
       credentials: 'include',
     }).then((res) => {
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        throw new Error('이미지 로드 실패');
+      }
       return res.json();
     });
-
-    callback(searchImageDataAdaptor(result));
-  } catch {
-    callback({ data: null, errorMessage: '이미지 로드 실패', success: false });
+  } catch (error) {
+    throw new Error((error as Error).message || '이미지 로드 실패');
   }
 }
 
@@ -349,10 +349,10 @@ function mainImageDataAdaptor(res: MainImageResponse): Response<MainImage> {
   };
 }
 
-function searchImageDataAdaptor(
+export function searchImageDataAdaptor(
   res: SearchImageResponse,
-): Response<SearchImage> {
-  const data = {
+): SearchImage {
+  return {
     paginationInfo: {
       size: res.paginationData.size,
       page: res.paginationData.page,
@@ -366,12 +366,6 @@ function searchImageDataAdaptor(
         url: d.url,
       })),
     },
-  };
-  validateSearchImageInfo(data);
-
-  return {
-    data,
-    success: true,
   };
 }
 

@@ -9,53 +9,60 @@ import JoinPage from './pages/JoinPage';
 import Layout from './Layout';
 import { UserProvider } from './context/UserContext';
 import PrivateRoute from './components/common/PrivateRoute';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 function App() {
+  const queryClient = new QueryClient();
+
   return (
-    <UserProvider>
-      <div className="App">
-        <BrowserRouter>
-          <Routes>
-            <Route path="/login" element={<LoginPage />}></Route>
-            <Route path="/join" element={<JoinPage />}></Route>
-            <Route element={<PrivateRoute />}>
-              <Route
-                path="/"
-                element={
-                  <Layout>
-                    <HomePage />
-                  </Layout>
-                }
-              ></Route>
-              <Route
-                path="/search/:searchWord"
-                element={
-                  <Layout>
-                    <SearchPage />
-                  </Layout>
-                }
-              ></Route>
-              <Route
-                path="/make-image-pin"
-                element={
-                  <Layout>
-                    <ImagePinFormPage />
-                  </Layout>
-                }
-              ></Route>
-              <Route
-                path="/image-pin-detail/:id"
-                element={
-                  <Layout>
-                    <ImagePinDetailPage />
-                  </Layout>
-                }
-              ></Route>
-            </Route>
-          </Routes>
-        </BrowserRouter>
-      </div>
-    </UserProvider>
+    <QueryClientProvider client={queryClient}>
+      <UserProvider>
+        <div className="App">
+          <BrowserRouter>
+            <Routes>
+              <Route path="/login" element={<LoginPage />}></Route>
+              <Route path="/join" element={<JoinPage />}></Route>
+              <Route element={<PrivateRoute />}>
+                <Route
+                  path="/"
+                  element={
+                    <Layout>
+                      <HomePage />
+                    </Layout>
+                  }
+                ></Route>
+                <Route
+                  path="/search/:searchWord"
+                  element={
+                    <Layout>
+                      <SearchPage />
+                    </Layout>
+                  }
+                ></Route>
+                <Route
+                  path="/make-image-pin"
+                  element={
+                    <Layout>
+                      <ImagePinFormPage />
+                    </Layout>
+                  }
+                ></Route>
+                <Route
+                  path="/image-pin-detail/:id"
+                  element={
+                    <Layout>
+                      <ImagePinDetailPage />
+                    </Layout>
+                  }
+                ></Route>
+              </Route>
+            </Routes>
+          </BrowserRouter>
+        </div>
+      </UserProvider>
+      <ReactQueryDevtools initialIsOpen={true} />
+    </QueryClientProvider>
   );
 }
 

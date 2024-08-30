@@ -81,9 +81,8 @@ type ImageReplyResponse = {
 
 export async function getMainImages(
   paginationParams: PaginationParams,
-  callback: (data: Response<MainImage> | ErrorResponse) => void,
   seed?: number,
-) {
+): Promise<Response<MainImage> | ErrorResponse> {
   validatePaginationParams(paginationParams);
   if (seed) validateSeedParams(seed);
 
@@ -106,9 +105,9 @@ export async function getMainImages(
       return res.json();
     });
 
-    callback(mainImageDataAdaptor(result));
+    return mainImageDataAdaptor(result);
   } catch {
-    callback({ data: null, errorMessage: '이미지 로드 실패', success: false });
+    return { data: null, errorMessage: '이미지 로드 실패', success: false };
   }
 }
 

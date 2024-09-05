@@ -5,7 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '../shadcn/ui/card';
 import { Input } from '../shadcn/ui/input';
 import RepliesArccordion from './RepliesArccordion';
 import { createImageReply, deleteImageReply } from '../../api/reply.api';
-import { useContext, useState } from 'react';
+import { useContext } from 'react';
 import { ImageReplyInfo } from '../../api/types/reply.data.type';
 import { HiPaperAirplane } from 'react-icons/hi';
 import { UserContext, UserContextValue } from '../../context/UserContext';
@@ -26,6 +26,7 @@ interface Props {
   userName: string;
   userEmail: string;
   replies: ImageReplyInfo[];
+  setReplies: (replies: ImageReplyInfo[]) => void;
   deleteImagePinRequest: (id: number) => void;
   isSaved: boolean;
   createSaveImage: (id: number) => void;
@@ -41,20 +42,20 @@ function ImagePinDetail({
   userName,
   userEmail,
   replies,
+  setReplies,
   deleteImagePinRequest,
   isSaved,
   createSaveImage,
   deleteSaveImage,
 }: Props) {
   const { register, handleSubmit } = useForm();
-  const [repliesState, setRepliesState] = useState<ImageReplyInfo[]>(replies);
   const { user } = useContext(UserContext) as UserContextValue;
 
   const addReply = (data: FieldValues) => {
     createImageReply({ content: data.reply, imageId: id }, (res) => {
       if (!res || !res.success) return; // todo: reply 생성 실패했다는 toast? alert? 띄우기.
       const newReply = res.data as ImageReplyInfo;
-      setRepliesState([newReply, ...repliesState]);
+      setReplies([newReply, ...replies]);
     });
   };
 
@@ -68,7 +69,7 @@ function ImagePinDetail({
   };
 
   const deleteReplyInState = (id: number) => {
-    setRepliesState([...repliesState.filter((reply) => reply.id !== id)]);
+    setReplies([...replies.filter((reply) => reply.id !== id)]);
   };
 
   const deleteImageReplyRequest = (id: number) => {
@@ -130,7 +131,7 @@ function ImagePinDetail({
               <div>
 
               <RepliesArccordion
-                replies={repliesState}
+                replies={replies}
                 deleteReplyHandler={deleteImageReplyRequest}
                 ></RepliesArccordion>
                 </div>

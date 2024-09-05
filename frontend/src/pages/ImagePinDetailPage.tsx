@@ -20,6 +20,7 @@ import {
 import { SaveImageInfo } from '../api/types/saveimage.data.type';
 import ImagePinList from '../components/image/ImagePinList';
 import { commonValue } from '../common.value';
+import { ImageReplyInfo } from '../api/types/reply.data.type';
 
 function ImagePinDetailPage() {
   const param = useParams();
@@ -28,6 +29,7 @@ function ImagePinDetailPage() {
     Response<ImageDetailsInfo> | ErrorResponse
   >();
   const [loading, setLoading] = useState<boolean>(false);
+  const [replies, setReplies] = useState<ImageReplyInfo[]>();
   const [isSaved, setIsSaved] = useState(false);
   const [saveImage, setSaveImage] = useState<SaveImageInfo | null>(null);
   const [imageDatas, setImageDatas] = useState<
@@ -42,10 +44,26 @@ function ImagePinDetailPage() {
 
   useEffect(() => {
     checkParamValidation();
+
+    window.scrollTo(0, 0);
+    page.current = 1;
+    initState();
+
     getImageDeatilsData();
     getSaveImageData();
     getSimilarCategoriesImages();
   }, [param.id]);
+
+  const initState = () => {
+    setIsSaved(false);
+    setSaveImage(null);
+    setImageDatas(undefined);
+    setFetching(false);
+  };
+
+  const setRepliesHandler = (newReplies: ImageReplyInfo[]) => {
+    setReplies(newReplies);
+  };
 
   const checkParamValidation = () => {
     if (!param.id) navigate('/');
@@ -56,6 +74,7 @@ function ImagePinDetailPage() {
     if (!param.id) return;
     getImageDetails(Number.parseInt(param.id), (res) => {
       setImageDetails(res);
+      setReplies(res.data?.imageDetails.replies);
     });
   };
 
@@ -78,7 +97,7 @@ function ImagePinDetailPage() {
     });
   };
 
-  const requesToCreateSaveImage = (id: number) => {
+  const requestToCreateSaveImage = (id: number) => {
     createSaveImage(id, (res) => {
       if (!res || !res.success) {
         // todo 댓글 삭제 실패 안내문 alert 띄우기.
@@ -90,7 +109,7 @@ function ImagePinDetailPage() {
     });
   };
 
-  const requesToDeleteSaveImage = () => {
+  const requestToDeleteSaveImage = () => {
     if (!saveImage) {
       // todo save image 취소 실패 안내문 alert 띄우기. 뭔가 알 수 없는 문제가 생겼다고 알림.
       return;
@@ -122,7 +141,7 @@ function ImagePinDetailPage() {
       callback,
     );
     setFetching(true);
-  }, [imageDatas]);
+  }, [param.id, imageDatas]);
 
   const isErrorResponse = (
     response: Response<ImageDetailsInfo> | ErrorResponse | undefined,
@@ -145,13 +164,15 @@ function ImagePinDetailPage() {
       )}
       {!imageDetails && <div>loading...</div>}
       {isErrorResponse(imageDetails) && <div>{imageDetails.errorMessage}</div>}
-      {imageDetails && imageDetails.data?.imageDetails && (
+      {imageDetails && imageDetails.data?.imageDetails && replies && (
         <ImagePinDetail
           {...imageDetails.data.imageDetails}
+          replies={replies}
+          setReplies={setRepliesHandler}
           deleteImagePinRequest={deleteImagePinRequest}
           isSaved={isSaved}
-          createSaveImage={requesToCreateSaveImage}
-          deleteSaveImage={requesToDeleteSaveImage}
+          createSaveImage={requestToCreateSaveImage}
+          deleteSaveImage={requestToDeleteSaveImage}
         ></ImagePinDetail>
       )}
       {!isErrorImagesResponse(imageDatas) &&

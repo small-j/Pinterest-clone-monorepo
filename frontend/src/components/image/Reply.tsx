@@ -30,8 +30,8 @@ function Reply({ userName, id, content, userId, deleteReplyHandler }: Props) {
 
   return (
     <div className="flex mt-2 mb-2">
-      <Badge className="mr-2">{userName === '' ? 'Unknown' : userName}</Badge>
-      <div className="w-full flex justify-between">
+      <Badge className="mr-2 h-8">{userName === '' ? 'Unknown' : userName}</Badge>
+      <div className="grow flex justify-between items-center">
         <div>{content}</div>
         {checkUserAthorization() && (
           <DropdownMenu>

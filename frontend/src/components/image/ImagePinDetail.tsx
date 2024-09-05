@@ -85,9 +85,9 @@ function ImagePinDetail({
       <div className="w-2/4 min-h-[472.5px] max-h-full">
         <img className="max-w-full max-h-full" src={url} alt="pin image" />
       </div>
-      <div className="w-2/4 h-full grow flex">
+      <div className="w-2/4 flex">
         <Card className="border-none shadow-none w-full h-full flex flex-col">
-          <CardHeader className="flex flex-row justify-between items-center pb-0 sticky top-0 bg-white">
+          <CardHeader className="sticky flex flex-row justify-between items-center pb-2 top-0 bg-white">
             {checkUserAthorization() ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -105,7 +105,10 @@ function ImagePinDetail({
               <div></div>
             )}
             {!isSaved ? (
-              <Button className="m-0 bg-[#e60023]" onClick={() => createSaveImage(id)}>
+              <Button
+                className="m-0 bg-[#e60023]"
+                onClick={() => createSaveImage(id)}
+              >
                 저장
               </Button>
             ) : (
@@ -115,15 +118,25 @@ function ImagePinDetail({
             )}
           </CardHeader>
           <CardContent className="mt-8 grow">
-            <h1 className="text-[28px] font-semibold">{title}</h1>
-            <div className="text-base mt-4 mb-4">{content}</div>
-            <Profile name={userName} email={userEmail} marginTop='4' marginBottom='8'></Profile>
-            <RepliesArccordion
-              replies={repliesState}
-              deleteReplyHandler={deleteImageReplyRequest}
-            ></RepliesArccordion>
+            <div className="overflow-y-auto h-100%">
+              <h1 className="text-[28px] font-semibold">{title}</h1>
+              <div className="text-base mt-4 mb-4">{content}</div>
+              <Profile
+                name={userName}
+                email={userEmail}
+                marginTop="4"
+                marginBottom="8"
+              ></Profile>
+              <div>
+
+              <RepliesArccordion
+                replies={repliesState}
+                deleteReplyHandler={deleteImageReplyRequest}
+                ></RepliesArccordion>
+                </div>
+            </div>
           </CardContent>
-          <CardFooter className="sticky bottom-0 bg-white">
+          <CardFooter className="sticky bottom-0 bg-white pt-2">
             <form className="flex w-full">
               <Input
                 placeholder="댓글 추가"
